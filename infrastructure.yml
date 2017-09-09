@@ -1,4 +1,14 @@
 ---
+Parameters:
+    LatestPackageVersion:
+        Type: String
+    PackageBucket:
+        Type: String
+    PackageKey:
+        Type: String
+    TellerAuth:
+        Type: String
+
 Resources:
     Bucket:
         Type: 'AWS::S3::Bucket'
@@ -6,12 +16,12 @@ Resources:
     BucketPolicy:
         Type: 'AWS::S3::BucketPolicy'
         Properties:
-            Bucket: !Ref 'Bucket'
+            Bucket: !Ref Bucket
             PolicyDocument:
                 Statement:
                     - Action:  's3:PutObject'
                       Effect: 'Allow'
-                      Resource: !Join ['', ['arn:aws:s3:::', !Ref 'Bucket', '/teller-responses/*']]
+                      Resource: !Join ['', ['arn:aws:s3:::', !Ref Bucket, '/teller-responses/*']]
                       Principal: '*'
 
     DumpTellerResponseLambdaRole:
@@ -35,4 +45,21 @@ Resources:
                       Statement:
                           - Effect: "Allow"
                             Action: "s3:PutObject"
-                            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'Bucket', '/teller-responses/*']]
+                            Resource: !Join ['', ['arn:aws:s3:::', !Ref Bucket, '/teller-responses/*']]
+
+    DumpTellerLambdaFunction:
+        Type: 'AWS::Lambda::Function'
+        Properties:
+            Code:
+                S3Bucket: !Ref PackageBucket
+                S3Key: !Ref PackageKey
+                S3ObjectVersion: !Ref LatestPackageVersion
+            Description: 'Makes a couple reqeusts to the Teller API and dumps the responses to S3.'
+            Environment:
+                Variables:
+                    AUTH: !Ref TellerAuth
+                    BUCKET: !Ref Bucket
+            Handler: 'src/dump-teller-responses.js'
+            Role: !GetAtt ['DumpTellerResponseLambdaRole', 'Arn']
+            Runtime: 'nodejs6.10'
+            Timeout: 30

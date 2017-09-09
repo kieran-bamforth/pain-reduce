@@ -1,7 +1,9 @@
-PROJECT_NAME=pain-reduce
+CF_METHOD=update
+CF_STACK_NAME=pain-reduce
 PACKAGE_BUCKET=kieran-bamforth
 PACKAGE_KEY=lambda-packages/$(PROJECT_NAME).zip
-CF_STACK_NAME=pain-reduce
+PROJECT_NAME=pain-reduce
+TELLER_AUTH=change-me
 
 install-deps:
 	npm install
@@ -13,15 +15,17 @@ zip-package: install-deps
 upload-package: zip-package
 	aws s3 cp $(PROJECT_NAME).zip s3://$(PACKAGE_BUCKET)/$(PACKAGE_KEY)
 
-# Cloudformation.
-cloudformation-stack:
-	aws cloudformation create-stack \
+cloudformation-stack: get-latest-package-version
+	aws cloudformation $(CF_METHOD)-stack \
 		--stack-name $(CF_STACK_NAME) \
 		--template-body file://infrastructure.yml \
-		--capabilities CAPABILITY_IAM
+		--capabilities CAPABILITY_IAM \
+		--parameters \
+			ParameterKey=LatestPackageVersion,ParameterValue=$(LATEST_PACKAGE_VERSION) \
+			ParameterKey=PackageBucket,ParameterValue=$(PACKAGE_BUCKET) \
+			ParameterKey=PackageKey,ParameterValue=$(PACKAGE_KEY) \
+			ParameterKey=TellerAuth,ParameterValue=$(TELLER_AUTH)
 
-update-cloudformation-stack:
-	aws cloudformation update-stack \
-		--stack-name $(CF_STACK_NAME) \
-		--template-body file://infrastructure.yml \
-		--capabilities CAPABILITY_IAM
+get-latest-package-version:
+	$(eval LATEST_PACKAGE_VERSION := $(shell aws s3api list-object-versions --bucket $(PACKAGE_BUCKET) --prefix $(PACKAGE_KEY) \
+		| jq -r '.Versions[] | select(.IsLatest == true).VersionId'))

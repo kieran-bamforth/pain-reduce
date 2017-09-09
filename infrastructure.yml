@@ -1,0 +1,15 @@
+---
+Resources:
+    Bucket:
+        Type: 'AWS::S3::Bucket'
+
+    BucketPolicy:
+        Type: 'AWS::S3::BucketPolicy'
+        Properties:
+            Bucket: !Ref 'Bucket'
+            PolicyDocument:
+                Statement:
+                    - Action:  's3:PutObject'
+                      Effect: 'Allow'
+                      Resource: !Join ['', ['arn:aws:s3:::', !Ref 'Bucket', '/teller-responses/*']]
+                      Principal: '*'

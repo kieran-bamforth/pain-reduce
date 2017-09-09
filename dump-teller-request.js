@@ -11,9 +11,7 @@ let resource = process.env.RESOURCE
 let options = {
   method: 'GET',
   url: `https://api.teller.io/accounts/${account}${resource}`,
-  headers: {
-    authorization: auth
-  }
+  headers: { authorization: auth }
 };
 
 request(options, (error, response, body) => {

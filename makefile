@@ -17,9 +17,11 @@ upload-package: zip-package
 cloudformation-stack:
 	aws cloudformation create-stack \
 		--stack-name $(CF_STACK_NAME) \
-		--template-body file://infrastructure.yml
+		--template-body file://infrastructure.yml \
+		--capabilities CAPABILITY_IAM
 
 update-cloudformation-stack:
 	aws cloudformation update-stack \
 		--stack-name $(CF_STACK_NAME) \
-		--template-body file://infrastructure.yml
+		--template-body file://infrastructure.yml \
+		--capabilities CAPABILITY_IAM

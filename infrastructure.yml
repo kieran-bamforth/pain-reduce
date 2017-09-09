@@ -59,7 +59,7 @@ Resources:
                 Variables:
                     AUTH: !Ref TellerAuth
                     BUCKET: !Ref Bucket
-            Handler: 'src/dump-teller-responses.js'
+            Handler: 'src/dump-teller-responses.index'
             Role: !GetAtt ['DumpTellerResponseLambdaRole', 'Arn']
             Runtime: 'nodejs6.10'
             Timeout: 30

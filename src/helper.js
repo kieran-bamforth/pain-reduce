@@ -13,11 +13,14 @@ module.exports = {
     return key.split('/').slice(0, -1).join('/');
   },
   previousDateStr(start, dates) {
+    if (typeof start !== 'string') {
+      throw 'expected start to be a string';
+    }
+    if (!Array.isArray(dates)) {
+      throw 'expected dates to be a array';
+    }
     return dates.reduce((acc, date) => {
-      if (date < start && date > acc) {
-        return date;
-      }
-      return acc;
+      return (date < start && date > acc) ? date : acc;
     });
   }
 }

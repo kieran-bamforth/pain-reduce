@@ -3,8 +3,6 @@ let assert = require('chai').assert;
 let helper = require('../src/helper');
 
 suite('helper.js', () => {
-  suite('getSiblings', () => {
-  });
   suite('getKeyPath', () => {
     test('get the correct key path to the current key', () => {
       assert.strictEqual(
@@ -20,6 +18,23 @@ suite('helper.js', () => {
     });
     test('shit the bed if the provided key is not a string', () => {
       assert.throws(() => {return helper.getKeyPath(null)});
+    });
+  });
+  suite('getKeyName', () => {
+    test('get the correct key path to the current key', () => {
+      assert.strictEqual(
+        helper.getKeyName('teller-responses/account/direct_debits/changed_file'),
+        'changed_file'
+      )
+    });
+    test('return current key if it is a top level key', () => {
+      assert.strictEqual(helper.getKeyName('teller-responses'), 'teller-responses');
+    });
+    test('shit the bed if the provided key is blank', () => {
+      assert.throws(() => {return helper.getKeyName('')});
+    });
+    test('shit the bed if the provided key is not a string', () => {
+      assert.throws(() => {return helper.getKeyName(null)});
     });
   });
   suite('previousDateStr', () => {

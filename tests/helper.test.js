@@ -31,16 +31,19 @@ suite('helper.js', () => {
         '2017-09-09T16:05:17.338Z',
         '2017-09-09T16:05:18.338Z'
       ];
-      assert.strictEqual(
-        helper.previousDateStr('2017-09-29T16:05:17.338Z', allDateStrs),
-        '2017-09-19T16:05:17.338Z'
-      );
+      [
+        {date: '2017-09-29T16:05:17.338Z', expected: '2017-09-19T16:05:17.338Z'},
+        {date: '2017-09-10T16:05:17.338Z', expected: '2017-09-09T16:05:18.338Z'}
+      ].forEach((entry, expected) => {
+        assert.strictEqual(
+          helper.previousDateStr(entry.date, allDateStrs), entry.expected);
+      });
     });
     test('should shit the bed if start is not a string', () => {
-      assert.throws(() => {return helper.previousDateStr(null, []) });
+      assert.throws(() => { return helper.previousDateStr(null, []) });
     });
     test('should shit the bed if dates is not an array', () => {
-      assert.throws(() => {return helper.previousDateStr('str', 'null') });
+      assert.throws(() =>  { return helper.previousDateStr('str', 'null') });
     });
   });
 });

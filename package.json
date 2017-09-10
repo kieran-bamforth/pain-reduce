@@ -4,12 +4,15 @@
   "description": "reducing all of the pains",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --ui tdd --recursive ./tests",
+    "test-debug": "mocha debug --ui tdd --recursive ./tests"
   },
   "author": "kieran bamforth <hello@kieranbamforth.me>",
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.112.0",
+    "chai": "^4.1.2",
+    "mocha": "^3.5.0",
     "request": "^2.81.0"
   }
 }

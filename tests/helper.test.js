@@ -36,5 +36,11 @@ suite('helper.js', () => {
         '2017-09-19T16:05:17.338Z'
       );
     });
+    test('should shit the bed if start is not a string', () => {
+      assert.throws(() => {return helper.previousDateStr(null, []) });
+    });
+    test('should shit the bed if dates is not an array', () => {
+      assert.throws(() => {return helper.previousDateStr('str', 'null') });
+    });
   });
 });

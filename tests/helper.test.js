@@ -56,7 +56,7 @@ suite('helper.js', () => {
     });
     test('should throw an error if there are no previous date strs', () => {
       assert.throws(() => {
-        return helper.previousDateStr('2017-09-10T16:05:17.338Z', ['2017-09-20T16:05:17.338Z']);
+        return helper.previousDateStr('2017-09-10T16:05:17.338Z', ['2017-09-10T16:05:17.338Z']);
       });
     });
     test('should throw an error dates is an empty array', () => {

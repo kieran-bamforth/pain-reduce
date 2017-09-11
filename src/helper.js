@@ -28,8 +28,12 @@ module.exports = {
     if (!Array.isArray(dates)) {
       throw 'expected dates to be a array';
     }
-    return dates.reduce((acc, date) => {
+    let result = dates.reduce((acc, date) => {
       return (date < start && date > acc) ? date : acc;
-    });
+    }, '');
+    if (result === '') {
+      throw new Error(`could not find a date previous to ${start}`);
+    }
+    return result;
   }
 }

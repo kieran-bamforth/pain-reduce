@@ -13,10 +13,10 @@ suite('helper.js', () => {
     test('return a blank key path if this is a root level item', () => {
       assert.strictEqual(helper.getKeyPath('teller-responses'), '');
     });
-    test('shit the bed if the provided key is blank', () => {
+    test('throw an error if the provided key is blank', () => {
       assert.throws(() => {return helper.getKeyPath('')});
     });
-    test('shit the bed if the provided key is not a string', () => {
+    test('throw an error if the provided key is not a string', () => {
       assert.throws(() => {return helper.getKeyPath(null)});
     });
   });
@@ -30,10 +30,10 @@ suite('helper.js', () => {
     test('return current key if it is a top level key', () => {
       assert.strictEqual(helper.getKeyName('teller-responses'), 'teller-responses');
     });
-    test('shit the bed if the provided key is blank', () => {
+    test('throw an error if the provided key is blank', () => {
       assert.throws(() => {return helper.getKeyName('')});
     });
-    test('shit the bed if the provided key is not a string', () => {
+    test('throw an error if the provided key is not a string', () => {
       assert.throws(() => {return helper.getKeyName(null)});
     });
   });
@@ -54,11 +54,51 @@ suite('helper.js', () => {
           helper.previousDateStr(entry.date, allDateStrs), entry.expected);
       });
     });
-    test('should shit the bed if start is not a string', () => {
+    test('should throw an error if there are no previous date strs', () => {
+      assert.throws(() => {
+        return helper.previousDateStr('2017-09-10T16:05:17.338Z', ['2017-09-20T16:05:17.338Z']);
+      });
+    });
+    test('should throw an error dates is an empty array', () => {
+      assert.throws(() => { return helper.previousDateStr('2017-09-10T16:05:17.338Z', []); });
+    });
+    test('should throw an error if start is not a string', () => {
       assert.throws(() => { return helper.previousDateStr(null, []) });
     });
-    test('should shit the bed if dates is not an array', () => {
-      assert.throws(() =>  { return helper.previousDateStr('str', 'null') });
+    test('should throw an error if dates is not an array', () => {
+      assert.throws(() =>  { return helper.previousDateStr('str', null) });
+    });
+  });
+  suite('array', () => {
+    test('does the map function work the way I expect it to?', () => {
+      let data = {
+        Contents: [
+          {
+            ETag: "\"70ee1738b6b21e2c8a43f3a5ab0eee71\"",
+            Key: "happyface.jpg",
+            LastModified: 'datestr',
+            Size: 11,
+            StorageClass: "STANDARD"
+          },
+          {
+            ETag: "\"becf17f89c30367a9a44495d62ed521a-1\"",
+            Key: "test.jpg",
+            LastModified: 'datestr',
+            Size: 4192256,
+            StorageClass: "STANDARD"
+          }
+        ],
+        IsTruncated: true,
+        KeyCount: 2,
+        MaxKeys: 2,
+        Name: "examplebucket",
+        NextContinuationToken: "1w41l63U0xa8q7smH50vCxyTQqdxo69O3EmK28Bi5PcROI4wI/EyIJg==",
+        Prefix: ""
+      }
+      assert.deepEqual(
+        data.Contents.map(entry => entry.Key),
+        ['happyface.jpg', 'test.jpg']
+      );
     });
   });
 });

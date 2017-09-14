@@ -20,20 +20,5 @@ module.exports = {
       throw 'expected key to not be a blank string';
     }
     return key.split('/').slice(-1).join();
-  },
-  previousDateStr(start, dates) {
-    if (typeof start !== 'string') {
-      throw 'expected start to be a string';
-    }
-    if (!Array.isArray(dates)) {
-      throw 'expected dates to be a array';
-    }
-    let result = dates.reduce((acc, date) => {
-      return (date < start && date > acc) ? date : acc;
-    }, '');
-    if (result === '') {
-      throw new Error(`could not find a date previous to ${start}`);
-    }
-    return result;
   }
 }

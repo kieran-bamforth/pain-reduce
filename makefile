@@ -29,3 +29,15 @@ cloudformation-stack: get-latest-package-version
 get-latest-package-version:
 	$(eval LATEST_PACKAGE_VERSION := $(shell aws s3api list-object-versions --bucket $(PACKAGE_BUCKET) --prefix $(PACKAGE_KEY) \
 		| jq -r '.Versions[] | select(.IsLatest == true).VersionId'))
+
+get-diff-function-name:
+	$(eval DIFF_FUNCTION_NAME := $(shell aws cloudformation describe-stacks --stack-name $(CF_STACK_NAME) \
+		| jq '.Stacks[].Outputs[] | select (.OutputKey == "DiffAlertLambdaFunctionName").OutputValue'))
+	echo $(DIFF_FUNCTION_NAME)
+
+invoke-diff-function: get-diff-function-name
+	aws lambda invoke --function-name $(DIFF_FUNCTION_NAME) \
+		--invocation-type RequestResponse \
+		--log-type Tail \
+		--payload file://$(PWD)/tests/s3-put-notification.json \
+		diff.invoked.txt

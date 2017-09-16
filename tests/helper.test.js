@@ -39,37 +39,37 @@ suite('helper.js', () => {
   });
   suite('getObjectModifiedBefore', () => {
     let objects;
+
     before(() => {
-      objects = {
-        "Contents": [
-          {
-            "LastModified": "2017-08-08T10:52:59.000Z",
-            "ETag": "\"d41d8cd98f00b204e9800998ecf8427e\"",
-            "StorageClass": "STANDARD",
-            "Key": "small",
-            "Size": 0
-          },
-          {
-            "LastModified": "2017-09-14T14:54:18.000Z",
-            "ETag": "\"b90244d8a932ba58ec7f0681cc12e16c\"",
-            "StorageClass": "STANDARD",
-            "Key": "medium",
-            "Size": 2093438
-          },
-          {
-            "LastModified": "2017-09-14T14:54:08.000Z",
-            "ETag": "\"d04911cd1958467c68e057be215129ae-2\"",
-            "StorageClass": "STANDARD",
-            "Key": "large",
-            "Size": 10800493
-          }
-        ]
-      }
+      objects = [
+        { "LastModified": "2017-08-08T10:52:59.000Z" },
+        { "LastModified": "2017-09-14T14:54:18.000Z" },
+        { "LastModified": "2017-09-16T14:54:08.000Z" }
+      ]
     });
-    test.skip('should get the previous object', () => {  });
-    test.skip('should throw an error if there are no previous objects', () => {  });
-    test.skip('should throw an error if previous objects is an empty array', () => {  });
-    test.skip('should throw an error if start is not a string', () => {  });
-    test.skip('should throw an error if objects is not an object', () => {  });
+
+    test('should get the previous object', () => {
+      [
+        {lastModified: "2017-09-14T14:54:18.000Z", expected: "2017-08-08T10:52:59.000Z"},
+        {lastModified: "2017-09-16T14:54:08.000Z", expected: "2017-09-14T14:54:18.000Z"}
+      ].forEach((entry) => {
+        assert.deepEqual(
+          helper.getObjectModifiedBefore(entry.lastModified, objects),
+          { LastModified: entry.expected }
+        );
+      });
+    });
+    test('should throw an error if there are no previous objects', () => {
+      assert.throws(() => {helper.getObjectModifiedBefore('2017-08-08T10:52:59.000Z', objects)} );
+    });
+    test('should throw an error if previous objects is an empty array', () => {
+      assert.throws(() => {helper.getObjectModifiedBefore('2017-08-08T10:52:59.000Z', [])} );
+    });
+    test('should throw an error if date is not a string', () => {
+      assert.throws(() => {helper.getObjectModifiedBefore(null, objects)} );
+    });
+    test('should throw an error if objects is not an array', () => {
+      assert.throws(() => {helper.getObjectModifiedBefore('2017-08-08T10:52:59.000Z', null)} );
+    });
   });
 });

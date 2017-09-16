@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "test": "mocha --ui tdd --recursive ./tests",
-    "test-debug": "mocha debug --ui tdd --recursive ./tests"
+    "test-debug": "mocha debug --ui tdd --recursive ./tests",
+    "lint": "eslint src"
   },
   "author": "kieran bamforth <hello@kieranbamforth.me>",
   "license": "ISC",

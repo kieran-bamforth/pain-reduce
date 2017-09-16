@@ -41,3 +41,6 @@ invoke-diff-function: get-diff-function-name
 		--log-type Tail \
 		--payload file://$(PWD)/tests/s3-put-notification.json \
 		diff.invoked.txt
+
+lint:
+	npm run lint

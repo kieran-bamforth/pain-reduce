@@ -22,11 +22,11 @@ module.exports = {
     return key.split('/').slice(-1).join();
   },
   getObjectModifiedBefore: function getObjectModifiedBefore(date, objects) {
-    let result =  objects.reduce((acc, current) => {
+    let result = objects.reduce((acc, current) => {
       return (current.LastModified < date && current > acc.LastModified) ? current : acc;
     }, { LastModified: ''});
     if (result.LastModified === '') {
-      throw `could not find any objects modified before ${date}`
+      throw new Error(`could not find any objects modified before ${date}`);
     }
     return result;
   }

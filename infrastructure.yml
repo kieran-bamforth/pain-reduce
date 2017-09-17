@@ -33,6 +33,11 @@ Resources:
                       Resource: !Join ['', ['arn:aws:s3:::', !Ref Bucket, '/*']]
                       Principal:
                           AWS: !GetAtt ['DiffAlertLambdaRole', 'Arn']
+                    - Action: 's3:ListBucket'
+                      Effect: 'Allow'
+                      Resource: !Join ['', ['arn:aws:s3:::', !Ref Bucket]]
+                      Principal:
+                          AWS: !GetAtt ['DiffAlertLambdaRole', 'Arn']
 
     DumpTellerResponseLambdaRole:
         Type: 'AWS::IAM::Role'

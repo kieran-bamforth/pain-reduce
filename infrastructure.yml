@@ -16,6 +16,12 @@ Outputs:
 Resources:
     Bucket:
         Type: 'AWS::S3::Bucket'
+        # Cicular dependency, having to setup notification manually
+        # Properties:
+        #     NotificationConfiguration:
+        #         LambdaConfigurations:
+        #             - Event: 's3:ObjectCreated:Put'
+        #               Function: !GetAtt ['DiffAlertLambdaFunction', 'Arn']
 
     BucketPolicy:
         Type: 'AWS::S3::BucketPolicy'
@@ -94,13 +100,20 @@ Resources:
             ManagedPolicyArns:
                  - "arn:aws:iam::aws:policy/AWSLambdaExecute"
             Policies:
-                - PolicyName: "S3Access"
+                - PolicyName: "S3GetObject"
                   PolicyDocument:
                       Version: "2012-10-17"
                       Statement:
                           - Effect: "Allow"
                             Action: "s3:GetObject"
                             Resource: !Join ['', ['arn:aws:s3:::', !Ref Bucket, '/*']]
+                - PolicyName: "S3ListBucket"
+                  PolicyDocument:
+                      Version: "2012-10-17"
+                      Statement:
+                          - Effect: "Allow"
+                            Action: "s3:ListBucket"
+                            Resource: !Join ['', ['arn:aws:s3:::', !Ref Bucket]]
 
     DiffAlertLambdaFunction:
         Type: 'AWS::Lambda::Function'

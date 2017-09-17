@@ -27,7 +27,7 @@ module.exports = {
         key,
       ].map(keyValue => s3.getObject({ Bucket: bucket, Key: keyValue }).promise()));
     }).then((data) => {
-      console.log('Successfully downloaded two objects from S3.');
+      console.log(`Successfully downloaded two objects from S3. Attempting to send email to ${emailAddress}...`);
 
       const diff = deep.diff(
         JSON.parse(data[0].Body),

@@ -6,7 +6,7 @@ PROJECT_NAME=pain-reduce
 TELLER_AUTH=change-me
 
 install-deps:
-	npm install
+	npm install --production
 
 zip-package: install-deps
 	rm $(PROJECT_NAME).zip || true

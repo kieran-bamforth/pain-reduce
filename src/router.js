@@ -1,5 +1,6 @@
 const aws = require('aws-sdk');
 const bluebird = require('bluebird');
+const deep = require('deep-diff')
 const helper = require('./helper.js');
 
 aws.config.setPromisesDependency(bluebird);
@@ -17,10 +18,14 @@ module.exports = {
     ]).then((data) => {
       let lastModified = helper.getObjectModifiedBefore(data[0].LastModified, data[1].Contents);
       return Promise.all([
-        key,
-        lastModified.Key
+        lastModified.Key,
+        key
       ].map(keyValue => s3.getObject({ Bucket: bucket, Key: keyValue }).promise()));
     }).then((data) => {
+      let diff = deep.diff(
+        JSON.parse(data[0].Body),
+        JSON.parse(data[1].Body)
+      );
       callback();
     }).catch((error) => {
       console.log(error);

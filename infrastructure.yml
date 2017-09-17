@@ -8,6 +8,8 @@ Parameters:
         Type: String
     TellerAuth:
         Type: String
+    EmailAddress:
+        Type: String
 
 Outputs:
     DiffAlertLambdaFunctionArn:
@@ -114,6 +116,13 @@ Resources:
                           - Effect: "Allow"
                             Action: "s3:ListBucket"
                             Resource: !Join ['', ['arn:aws:s3:::', !Ref Bucket]]
+                - PolicyName: "SESSendEmail"
+                  PolicyDocument:
+                      Version: "2012-10-17"
+                      Statement:
+                          - Effect: "Allow"
+                            Action: "ses:SendEmail"
+                            Resource: '*'
 
     DiffAlertLambdaFunction:
         Type: 'AWS::Lambda::Function'
@@ -123,6 +132,9 @@ Resources:
                 S3Key: !Ref PackageKey
                 S3ObjectVersion: !Ref LatestPackageVersion
             Description: 'Diffs a new S3 object against an older one, and alerts if there is a difference.'
+            Environment:
+                Variables:
+                    EMAIL_ADDRESS: !Ref EmailAddress
             Handler: 'src/router.diffAlert'
             Role: !GetAtt ['DiffAlertLambdaRole', 'Arn']
             Runtime: 'nodejs6.10'

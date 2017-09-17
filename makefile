@@ -24,7 +24,8 @@ cloudformation-stack: get-latest-package-version
 			ParameterKey=LatestPackageVersion,ParameterValue=$(LATEST_PACKAGE_VERSION) \
 			ParameterKey=PackageBucket,ParameterValue=$(PACKAGE_BUCKET) \
 			ParameterKey=PackageKey,ParameterValue=$(PACKAGE_KEY) \
-			ParameterKey=TellerAuth,ParameterValue="$(TELLER_AUTH)"
+			ParameterKey=TellerAuth,ParameterValue="$(TELLER_AUTH)" \
+			ParameterKey=EmailAddress,ParameterValue="$(EMAIL_ADDRESS)"
 
 get-latest-package-version:
 	$(eval LATEST_PACKAGE_VERSION := $(shell aws s3api list-object-versions --bucket $(PACKAGE_BUCKET) --prefix $(PACKAGE_KEY) \

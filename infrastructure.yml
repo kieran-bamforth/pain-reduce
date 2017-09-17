@@ -23,10 +23,16 @@ Resources:
             Bucket: !Ref Bucket
             PolicyDocument:
                 Statement:
-                    - Action:  's3:PutObject'
+                    - Action: 's3:PutObject'
                       Effect: 'Allow'
                       Resource: !Join ['', ['arn:aws:s3:::', !Ref Bucket, '/teller-responses/*']]
-                      Principal: '*'
+                      Principal:
+                          AWS: !GetAtt ['DumpTellerResponseLambdaRole', 'Arn']
+                    - Action: 's3:GetObject'
+                      Effect: 'Allow'
+                      Resource: !Join ['', ['arn:aws:s3:::', !Ref Bucket, '/*']]
+                      Principal:
+                          AWS: !GetAtt ['DiffAlertLambdaRole', 'Arn']
 
     DumpTellerResponseLambdaRole:
         Type: 'AWS::IAM::Role'
@@ -99,7 +105,7 @@ Resources:
                 S3Key: !Ref PackageKey
                 S3ObjectVersion: !Ref LatestPackageVersion
             Description: 'Diffs a new S3 object against an older one, and alerts if there is a difference.'
-            Handler: 'src/router.diff_alert'
+            Handler: 'src/router.diffAlert'
             Role: !GetAtt ['DiffAlertLambdaRole', 'Arn']
             Runtime: 'nodejs6.10'
             Timeout: 30

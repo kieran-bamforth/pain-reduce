@@ -32,7 +32,7 @@ get-latest-package-version:
 
 get-diff-function-name:
 	$(eval DIFF_FUNCTION_NAME := $(shell aws cloudformation describe-stacks --stack-name $(CF_STACK_NAME) \
-		| jq '.Stacks[].Outputs[] | select (.OutputKey == "DiffAlertLambdaFunctionName").OutputValue'))
+		| jq '.Stacks[].Outputs[] | select (.OutputKey == "DiffAlertLambdaFunctionArn").OutputValue'))
 	echo $(DIFF_FUNCTION_NAME)
 
 invoke-diff-function: get-diff-function-name

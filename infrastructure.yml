@@ -10,7 +10,7 @@ Parameters:
         Type: String
 
 Outputs:
-    DiffAlertLambdaFunctionName:
+    DiffAlertLambdaFunctionArn:
         Value: !GetAtt ['DiffAlertLambdaFunction', 'Arn']
 
 Resources:

@@ -29,33 +29,30 @@ module.exports = {
     }).then((data) => {
       console.log(`Successfully downloaded two objects from S3. Attempting to send email to ${emailAddress}...`);
 
-      const diff = deep.diff(
-        JSON.parse(data[0].Body),
-        JSON.parse(data[1].Body)
-      );
+      const diff = deep.diff(JSON.parse(data[0].Body), JSON.parse(data[1].Body));
 
       return ses.sendEmail({
         Destination: {
-          ToAddresses: [emailAddress]
+          ToAddresses: [emailAddress],
         },
         Message: {
           Body: {
             Html: {
               Charset: 'UTF-8',
-              Data: 'This is a test email.'
+              Data: 'Data: ' + JSON.stringify(diff),
             },
             Text: {
               Charset: 'UTF-8',
-              Data: 'This is a test email.'
-            }
+              Data: 'Data: ' + JSON.stringify(diff),
+            },
           },
           Subject: {
             Charset: 'UTF-8',
-            Message: 'Pain Reduce: Diff Alert'
+            Data: 'Pain Reduce: Diff Alert',
           },
         },
-        Source: emailAddress
-      });
+        Source: emailAddress,
+      }).promise();
     }).then((data) => {
       console.log(`Email sent. Message ID: ${data.MessageId}`);
       callback();

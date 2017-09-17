@@ -30,13 +30,13 @@ get-latest-package-version:
 	$(eval LATEST_PACKAGE_VERSION := $(shell aws s3api list-object-versions --bucket $(PACKAGE_BUCKET) --prefix $(PACKAGE_KEY) \
 		| jq -r '.Versions[] | select(.IsLatest == true).VersionId'))
 
-get-diff-function-name:
-	$(eval DIFF_FUNCTION_NAME := $(shell aws cloudformation describe-stacks --stack-name $(CF_STACK_NAME) \
+get-diff-function-arn:
+	$(eval DIFF_FUNCTION_ARN := $(shell aws cloudformation describe-stacks --stack-name $(CF_STACK_NAME) \
 		| jq '.Stacks[].Outputs[] | select (.OutputKey == "DiffAlertLambdaFunctionArn").OutputValue'))
-	echo $(DIFF_FUNCTION_NAME)
+	echo $(DIFF_FUNCTION_ARN)
 
-invoke-diff-function: get-diff-function-name
-	aws lambda invoke --function-name $(DIFF_FUNCTION_NAME) \
+invoke-diff-function: get-diff-function-arn
+	aws lambda invoke --function-name $(DIFF_FUNCTION_ARN) \
 		--invocation-type RequestResponse \
 		--log-type Tail \
 		--payload file://$(PWD)/tests/s3-put-notification.json \

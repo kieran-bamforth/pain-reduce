@@ -29,7 +29,11 @@ module.exports = {
     }).then((data) => {
       console.log(`Successfully downloaded two objects from S3. Attempting to send email to ${emailAddress}...`);
 
-      const diff = deep.diff(JSON.parse(data[0].Body), JSON.parse(data[1].Body));
+      const from = data[0].Body.toString('utf-8');
+      const to = data[1].Body.toString('utf-8');
+      const diff = deep.diff(JSON.parse(from), JSON.parse(to));
+
+      console.log(`${from}, ${to}`);
 
       return ses.sendEmail({
         Destination: {
@@ -48,7 +52,7 @@ module.exports = {
           },
           Subject: {
             Charset: 'UTF-8',
-            Data: 'Pain Reduce: Diff Alert',
+            Data: `Pain Reduce: Diff Alert (${key})`,
           },
         },
         Source: emailAddress,

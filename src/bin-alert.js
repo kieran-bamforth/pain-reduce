@@ -34,7 +34,7 @@ module.exports = {
           },
           Subject: {
             Charset: 'UTF-8',
-            Data: 'Pain Reduce: Bin alert',
+            Data: 'Pain Reduce: Bin Alert',
           },
         },
         Source: emailAddress,

@@ -147,6 +147,23 @@ Resources:
             DeadLetterConfig:
                 TargetArn: !Ref 'DeadLetterQueue'
 
+    BinAlertLambdaFunctionPermission:
+        Type: 'AWS::Lambda::Permission'
+        Properties:
+            Action: 'lambda:InvokeFunction'
+            FunctionName: !GetAtt ['BinAlertLambdaFunction', 'Arn']
+            Principal: 'events.amazonaws.com'
+            SourceArn: !GetAtt BinAlertEventRule.Arn
+
+
+    BinAlertEventRule:
+        Type: 'AWS::Events::Rule'
+        Properties:
+            ScheduleExpression: 'cron(0 18 ? * TUE *)'
+            Targets:
+                - Arn: !GetAtt ['BinAlertLambdaFunction', 'Arn']
+                  Id: 'BinAlertLambdaFunction'
+
     DiffAlertLambdaRole:
         Type: 'AWS::IAM::Role'
         Properties:

@@ -98,6 +98,23 @@ Resources:
             DeadLetterConfig:
                 TargetArn: !Ref 'DeadLetterQueue'
 
+    DumpTellerLambdaFunctionPermission:
+        Type: 'AWS::Lambda::Permission'
+        Properties:
+            Action: 'lambda:InvokeFunction'
+            FunctionName: !GetAtt ['DumpTellerLambdaFunction', 'Arn']
+            Principal: 'events.amazonaws.com'
+            SourceArn: !GetAtt DumpTellerEventRule.Arn
+
+
+    DumpTellerEventRule:
+        Type: 'AWS::Events::Rule'
+        Properties:
+            ScheduleExpression: 'cron(0 9 ? * MON *)'
+            Targets:
+                - Arn: !GetAtt ['DumpTellerLambdaFunction', 'Arn']
+                  Id: 'DumpTellerLambdaFunction'
+
     BinAlertLambdaRole:
         Type: 'AWS::IAM::Role'
         Properties:

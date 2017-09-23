@@ -32,7 +32,7 @@ module.exports = {
       const from = data[0].Body.toString('utf-8');
       const to = data[1].Body.toString('utf-8');
 
-      let message = 'There are no diffs to display';
+      let message = 'There are no diffs to display.';
       let diff = deep.diff(JSON.parse(from), JSON.parse(to));
       if (typeof diff !== 'undefined') {
         diff = helper.mergeDiffsWithToObject(

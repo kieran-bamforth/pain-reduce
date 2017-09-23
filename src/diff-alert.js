@@ -31,7 +31,16 @@ module.exports = {
 
       const from = data[0].Body.toString('utf-8');
       const to = data[1].Body.toString('utf-8');
-      const diff = deep.diff(JSON.parse(from), JSON.parse(to));
+
+      let message = 'There are no diffs to display';
+      let diff = deep.diff(JSON.parse(from), JSON.parse(to));
+      if (typeof diff !== 'undefined') {
+        diff = helper.mergeDiffsWithToObject(
+          deep.diff(JSON.parse(from), JSON.parse(to)),
+          to
+        );
+        message = JSON.stringify(diff);
+      }
 
       console.log(`${from}, ${to}`);
 
@@ -43,11 +52,7 @@ module.exports = {
           Body: {
             Html: {
               Charset: 'UTF-8',
-              Data: 'Data: ' + JSON.stringify(diff),
-            },
-            Text: {
-              Charset: 'UTF-8',
-              Data: 'Data: ' + JSON.stringify(diff),
+              Data: message,
             },
           },
           Subject: {

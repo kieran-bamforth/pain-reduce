@@ -219,7 +219,7 @@ Resources:
             Environment:
                 Variables:
                     EMAIL_ADDRESS: !Ref EmailAddress
-            Handler: 'src/router.diffAlert'
+            Handler: 'src/diff-alert.diffAlert'
             Role: !GetAtt ['DiffAlertLambdaRole', 'Arn']
             Runtime: 'nodejs6.10'
             Timeout: 30

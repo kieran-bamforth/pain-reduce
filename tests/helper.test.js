@@ -1,6 +1,7 @@
-const mocha = require('mocha');
 const assert = require('chai').assert;
+const deep = require('deep-diff');
 const helper = require('../src/helper');
+const mocha = require('mocha');
 
 suite('helper.js', () => {
   suite('getKeyPath', () => {
@@ -90,6 +91,11 @@ suite('helper.js', () => {
         helper.mergeDiffsWithToObject(diffs, toObject),
         expected
       );
+    });
+  });
+  suite('diff', () => {
+    test('should return undefined if there are no diffs', () => {
+      assert.isUndefined(deep.diff({}, {}));
     });
   });
 });

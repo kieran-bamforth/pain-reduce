@@ -32,4 +32,7 @@ module.exports = {
       return Object.assign({}, currentValue, { to: toObject[path] });
     });
   },
+  filterDiffsByKind: function filterDiffsByKind(diffs, kind) {
+    return diffs.filter(element => element.kind === kind);
+  }
 };

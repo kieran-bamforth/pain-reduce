@@ -4,6 +4,7 @@ const helper = require('../src/helper');
 const mocha = require('mocha');
 
 suite('helper.js', () => {
+
   suite('getKeyPath', () => {
     test('get the correct key path to the current key', () => {
       assert.strictEqual(
@@ -21,6 +22,7 @@ suite('helper.js', () => {
       assert.throws(() => { return helper.getKeyPath(null); });
     });
   });
+
   suite('getKeyName', () => {
     test('get the correct key path to the current key', () => {
       assert.strictEqual(
@@ -38,9 +40,9 @@ suite('helper.js', () => {
       assert.throws(() => { return helper.getKeyName(null); });
     });
   });
+
   suite('getObjectModifiedBefore', () => {
     let objects;
-
     before(() => {
       objects = [
         { LastModified: '2017-08-08T10:52:59.000Z' },
@@ -72,6 +74,7 @@ suite('helper.js', () => {
       assert.throws(() => { helper.getObjectModifiedBefore('2017-08-08T10:52:59.000Z', null); } );
     });
   });
+
   suite('mergeDiffsWithToObject', () => {
     test('should merge the "to" objects with the diffs', () => {
       const diffs = [
@@ -91,62 +94,46 @@ suite('helper.js', () => {
         expected
       );
     });
-    test.skip('should return the full item in the diff from teller', () => {
-      const fromData = [
-        {
-          reference: 'reference',
-          originator_name: 'originator',
-          links: {
-            self: 'self'
-          },
-          last_requested: '2016-07-04',
-          id: 'id',
-          currency: 'gbp',
-          amount: '100',
-        },
-        {
-          reference: 'reference2',
-          originator_name: 'originator2',
-          links: {
-            self: 'self'
-          },
-          last_requested: '2016-11-04',
-          id: 'id2',
-          currency: 'gbp',
-          amount: '200.00',
-        },
-      ];
-      const toData = [
-        {
-          reference: 'reference',
-          originator_name: 'originator',
-          links: {
-            self: 'self'
-          },
-          last_requested: '2016-07-04',
-          id: 'id',
-          currency: 'gbp',
-          amount: '100',
-        },
-        {
-          reference: 'reference2',
-          originator_name: 'originator2',
-          links: {
-            self: 'self'
-          },
-          last_requested: '2016-11-04',
-          id: 'id2',
-          currency: 'gbp',
-          amount: '150.00',
-        },
-      ];
-      const diffs = deep.diff(fromData, toData);
-      const result = helper.mergeDiffsWithToObject(diffs, toData);
+  });
+
+  suite('filterDiffsByKind', () => {
+    test('should filter an array by kind', () => {
+      const diffs = [ { kind: 'E',
+        path: [ 'name' ],
+        lhs: 'my object',
+        rhs: 'updated object' },
+        { kind: 'E',
+          path: [ 'details', 'with', 2 ],
+          lhs: 'elements',
+          rhs: 'more' },
+        { kind: 'A',
+          path: [ 'details', 'with' ],
+          index: 3,
+          item: { kind: 'N', rhs: 'elements' } },
+        { kind: 'A',
+          path: [ 'details', 'with' ],
+          index: 4,
+          item: { kind: 'N', rhs: { than: 'before' } } } ]
+      const expected = [
+        { kind: 'A',
+          path: [ 'details', 'with' ],
+          index: 3,
+          item: { kind: 'N', rhs: 'elements' } },
+        { kind: 'A',
+          path: [ 'details', 'with' ],
+          index: 4,
+          item: { kind: 'N', rhs: { than: 'before' } } } ]
+      assert.deepEqual(
+        helper.filterDiffsByKind(diffs, 'A'),
+        expected
+      )
     });
   });
+
   suite('diff', () => {
     test('should return undefined if there are no diffs', () => {
       assert.isUndefined(deep.diff({}, {}));
     });
   });
+
 });

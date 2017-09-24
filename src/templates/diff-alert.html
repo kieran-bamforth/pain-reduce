@@ -4,8 +4,8 @@
         <meta charset="UTF-8">
         <title>Pain Reduce: Diff alert</title>
         <style>
-.rhs { text-decoration: line-through; color: red; }
-.lhs { color: green; }
+.deleted { text-decoration: line-through; color: red; }
+.added { color: green; }
         </style>
     </head>
     <body>
@@ -16,11 +16,25 @@
                 <th><p>Path</p></th>
                 <th><p>Value</p></th>
             </tr>
+            {{# filterDiffsByKey this key="N" }}
+            <tr>
+                <td><p>{{ to.originator_name }}</p></td>
+                <td>{{ join path }}</td>
+                <td><p><span class="added">{{ rhs }}</span></p></td>
+            </tr>
+            {{/ filterDiffsByKey }}
+            {{# filterDiffsByKey this key="D" }}
+            <tr>
+                <td><p>{{ to.originator_name }}</p></td>
+                <td>{{ join path }}</td>
+                <td><p><span class="deleted">{{ lhs }}</span></p></td>
+            </tr>
+            {{/ filterDiffsByKey }}
             {{# filterDiffsByKey this key="E" }}
             <tr>
                 <td><p>{{ to.originator_name }}</p></td>
                 <td>{{ join path }}</td>
-                <td><p><span class="rhs">{{ rhs }}</span> <span class="rhs">{{ lhs }}</span></p></td>
+                <td><p><span class="deleted">{{ lhs }}</span> <span class="added">{{ rhs }}</span></p></td>
             </tr>
             {{/ filterDiffsByKey }}
         </table>

@@ -1,6 +1,7 @@
 const aws = require('aws-sdk');
 const bluebird = require('bluebird');
 const deep = require('deep-diff');
+const handlebars = require('./handlebars');
 const helper = require('./helper.js');
 
 aws.config.setPromisesDependency(bluebird);
@@ -39,7 +40,7 @@ module.exports = {
           deep.diff(JSON.parse(from), JSON.parse(to)),
           to
         );
-        message = JSON.stringify(diff);
+        message = handlebars.diffTemplate(diff);
       }
 
       console.log(`${from}, ${to}`);

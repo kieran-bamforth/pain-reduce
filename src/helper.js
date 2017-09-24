@@ -29,7 +29,7 @@ module.exports = {
   mergeDiffsWithToObject: function mergeDiffsWithToObject(diffs, toObject) {
     return diffs.map((currentValue) => {
       const path = currentValue.path.slice(0, -1).join('.');
-      return Object.assign(currentValue, { to: toObject[path] });
+      return Object.assign({}, currentValue, { to: toObject[path] });
     });
   },
 };

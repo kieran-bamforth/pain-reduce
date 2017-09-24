@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Pain Reduce: Diff alert</title>
+        <style>
+.rhs { text-decoration: line-through; color: red; }
+.lhs { color: green; }
+        </style>
+    </head>
+    <body>
+        <h1>Diff alert</h1>
+        <table>
+            <tr>
+                <th><p>Originator Name</p></th>
+                <th><p>Path</p></th>
+                <th><p>Value</p></th>
+            </tr>
+            {{# filterDiffsByKey this key="E" }}
+            <tr>
+                <td><p>{{ to.originator_name }}</p></td>
+                <td>{{ join path }}</td>
+                <td><p><span class="rhs">{{ rhs }}</span> <span class="rhs">{{ lhs }}</span></p></td>
+            </tr>
+            {{/ filterDiffsByKey }}
+        </table>
+    </body>
+</html>

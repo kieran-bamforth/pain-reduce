@@ -48,7 +48,6 @@ suite('helper.js', () => {
         { LastModified: '2017-09-16T14:54:08.000Z' }
       ];
     });
-
     test('should get the previous object', () => {
       [
         { lastModified: '2017-09-14T14:54:18.000Z', expected: '2017-08-08T10:52:59.000Z' },
@@ -61,7 +60,7 @@ suite('helper.js', () => {
       });
     });
     test('should throw an error if there are no previous objects', () => {
-      assert.throws(() => { helper.getObjectModifiedBefore('2017-08-08T10:52:59.000Z', objects); } );
+      assert.throws(() => { helper.getObjectModifiedBefore('2017-08-08T10:52:59.000Z', objects); });
     });
     test('should throw an error if previous objects is an empty array', () => {
       assert.throws(() => { helper.getObjectModifiedBefore('2017-08-08T10:52:59.000Z', []); } );
@@ -75,22 +74,74 @@ suite('helper.js', () => {
   });
   suite('mergeDiffsWithToObject', () => {
     test('should merge the "to" objects with the diffs', () => {
-      let diffs = [
-        {"path": [0, "genericKey"]}
+      const diffs = [
+        { path: [0, 'genericKey'] }
       ];
       let toObject = [
-        {"genericKey": "genericValue", "genericKey2": "genericValue2"}
+        {'genericKey': 'genericValue', 'genericKey2': 'genericValue2'}
       ];
       let expected = [
         {
-          "path":[0,"genericKey"],
-          "to": {"genericKey": "genericValue", "genericKey2": "genericValue2"}
+          'path':[0,'genericKey'],
+          'to': {'genericKey': 'genericValue', 'genericKey2': 'genericValue2'}
         }
       ];
       assert.deepEqual(
         helper.mergeDiffsWithToObject(diffs, toObject),
         expected
       );
+    });
+    test.skip('should return the full item in the diff from teller', () => {
+      const fromData = [
+        {
+          reference: 'reference',
+          originator_name: 'originator',
+          links: {
+            self: 'self'
+          },
+          last_requested: '2016-07-04',
+          id: 'id',
+          currency: 'gbp',
+          amount: '100',
+        },
+        {
+          reference: 'reference2',
+          originator_name: 'originator2',
+          links: {
+            self: 'self'
+          },
+          last_requested: '2016-11-04',
+          id: 'id2',
+          currency: 'gbp',
+          amount: '200.00',
+        },
+      ];
+      const toData = [
+        {
+          reference: 'reference',
+          originator_name: 'originator',
+          links: {
+            self: 'self'
+          },
+          last_requested: '2016-07-04',
+          id: 'id',
+          currency: 'gbp',
+          amount: '100',
+        },
+        {
+          reference: 'reference2',
+          originator_name: 'originator2',
+          links: {
+            self: 'self'
+          },
+          last_requested: '2016-11-04',
+          id: 'id2',
+          currency: 'gbp',
+          amount: '150.00',
+        },
+      ];
+      const diffs = deep.diff(fromData, toData);
+      const result = helper.mergeDiffsWithToObject(diffs, toData);
     });
   });
   suite('diff', () => {

@@ -6,6 +6,7 @@
         <style>
 .deleted { text-decoration: line-through; color: red; }
 .added { color: green; }
+.info { color: blue; }
         </style>
     </head>
     <body>
@@ -35,6 +36,13 @@
                 <td><p>{{ to.originator_name }}</p></td>
                 <td>{{ join path }}</td>
                 <td><p><span class="deleted">{{ lhs }}</span> <span class="added">{{ rhs }}</span></p></td>
+            </tr>
+            {{/ filterDiffsByKey }}
+            {{# filterDiffsByKey this key="A" }}
+            <tr>
+                <td><p>{{ to.originator_name }}</p></td>
+                <td>{{ join path }}</td>
+                <td><p class="info">An &ldquo;A&rdquo; change was included (not supported)</p></td>
             </tr>
             {{/ filterDiffsByKey }}
         </table>

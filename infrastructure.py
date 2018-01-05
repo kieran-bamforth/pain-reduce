@@ -1,32 +1,49 @@
-from troposphere import Parameter, Output, GetAtt, Ref, Template
-from troposphere.s3 import Bucket
+from troposphere import Parameter, Output, GetAtt, Ref, Template, Join
+from troposphere.iam import Role
+from troposphere.s3 import Bucket, BucketPolicy
+
+import pdb
 
 if __name__ == "__main__":
     template = Template()
 
-    param = template.add_parameter(Parameter(
+    template.add_parameter(Parameter(
         "LatestPackageVersion",
         Type="String"
         ))
-    param = template.add_parameter(Parameter(
+    template.add_parameter(Parameter(
         "PackageBucket",
         Type="String"
         ))
-    param = template.add_parameter(Parameter(
+    template.add_parameter(Parameter(
         "PackageKey",
         Type="String"
         ))
-    param = template.add_parameter(Parameter(
+    template.add_parameter(Parameter(
         "TellerAuth",
         Type="String"
         ))
-    param = template.add_parameter(Parameter(
+    template.add_parameter(Parameter(
         "EmailAddress",
         Type="String"
         ))
-    param = template.add_parameter(Parameter(
+    template.add_parameter(Parameter(
         "PropertyRefNo",
         Type="String"
+        ))
+
+    lambda_role_dump_teller_response = template.add_resource(Role(
+        "DumpTellerResponseLambdaRole",
+        AssumeRolePolicyDocument={},
+        ManagedPolicyArns=[],
+        Policies=[]
+        ))
+
+    lambda_role_diff_alert = template.add_resource(Role(
+        "DiffAlertLambdaRole",
+        AssumeRolePolicyDocument={},
+        ManagedPolicyArns=[],
+        Policies=[]
         ))
 
     s3_bucket = template.add_resource(Bucket("Bucket"))
@@ -43,7 +60,7 @@ if __name__ == "__main__":
                         "arn:aws:s3:::", Ref(s3_bucket), "/teller-responses/*"
                         ]),
                     "Principal": {
-                        # "AWS": "!GetAtt ["DumpTellerResponseLambdaRole", "Arn"]"
+                        "AWS": GetAtt(lambda_role_dump_teller_response, "Arn")
                         }
                     },
                 {
@@ -53,7 +70,7 @@ if __name__ == "__main__":
                         "arn:aws:s3:::", Ref(s3_bucket), "/*"
                         ]),
                     "Principal": {
-                        # "AWS": "!GetAtt ["DiffAlertLambdaRole", "Arn"]"
+                        "AWS": GetAtt(lambda_role_diff_alert, "Arn")
                         }
                     },
                 {
@@ -63,7 +80,7 @@ if __name__ == "__main__":
                         "arn:aws:s3:::", Ref(s3_bucket)
                         ]),
                     "Principal": {
-                        # "AWS": "!GetAtt ["DiffAlertLambdaRole", "Arn"]"
+                        "AWS": GetAtt(lambda_role_diff_alert, "Arn")
                         }
                     }
                 ]

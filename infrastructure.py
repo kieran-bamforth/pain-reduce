@@ -4,6 +4,29 @@ from troposphere.s3 import Bucket, BucketPolicy
 
 import pdb
 
+def create_lambda_role(role_name):
+    return Role(
+            role_name,
+            AssumeRolePolicyDocument={
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [
+                                "lambda.amazonaws.com"
+                                ]
+                            },
+                        "Action": [
+                            "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+            ManagedPolicyArns=["arn:aws:iam::aws:policy/AWSLambdaExecute"],
+            Policies=[]
+            )
+
 if __name__ == "__main__":
     template = Template()
 
@@ -32,19 +55,13 @@ if __name__ == "__main__":
         Type="String"
         ))
 
-    lambda_role_dump_teller_response = template.add_resource(Role(
-        "DumpTellerResponseLambdaRole",
-        AssumeRolePolicyDocument={},
-        ManagedPolicyArns=[],
-        Policies=[]
-        ))
+    lambda_role_dump_teller_response = template.add_resource(
+            create_lambda_role("DumpTellerResponseLambdaRole")
+            )
 
-    lambda_role_diff_alert = template.add_resource(Role(
-        "DiffAlertLambdaRole",
-        AssumeRolePolicyDocument={},
-        ManagedPolicyArns=[],
-        Policies=[]
-        ))
+    lambda_role_diff_alert = template.add_resource(
+            create_lambda_role("DiffAlertLambdaRole")
+            )
 
     s3_bucket = template.add_resource(Bucket("Bucket"))
 

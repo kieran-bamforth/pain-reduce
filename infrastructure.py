@@ -31,4 +31,44 @@ if __name__ == "__main__":
 
     s3_bucket = template.add_resource(Bucket("Bucket"))
 
+    s3_bucket_policy = template.add_resource(BucketPolicy(
+        "BucketPolicy",
+        PolicyDocument={
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Action": "s3:PutObject",
+                    "Effect": "Allow",
+                    "Resource": Join("", [
+                        "arn:aws:s3:::", Ref(s3_bucket), "/teller-responses/*"
+                        ]),
+                    "Principal": {
+                        # "AWS": "!GetAtt ["DumpTellerResponseLambdaRole", "Arn"]"
+                        }
+                    },
+                {
+                    "Action": "s3:GetObject",
+                    "Effect": "Allow",
+                    "Resource": Join("", [
+                        "arn:aws:s3:::", Ref(s3_bucket), "/*"
+                        ]),
+                    "Principal": {
+                        # "AWS": "!GetAtt ["DiffAlertLambdaRole", "Arn"]"
+                        }
+                    },
+                {
+                    "Action": "s3:ListBucket",
+                    "Effect": "Allow",
+                    "Resource": Join("", [
+                        "arn:aws:s3:::", Ref(s3_bucket)
+                        ]),
+                    "Principal": {
+                        # "AWS": "!GetAtt ["DiffAlertLambdaRole", "Arn"]"
+                        }
+                    }
+                ]
+            },
+        Bucket=Ref(s3_bucket)
+        ))
+
     print(template.to_json())

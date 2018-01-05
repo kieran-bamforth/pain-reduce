@@ -1,10 +1,11 @@
+from awacs.aws import Policy, Statement, Allow
 from troposphere import Parameter, Output, GetAtt, Ref, Template, Join
 from troposphere.iam import Role
 from troposphere.s3 import Bucket, BucketPolicy
 
-import pdb
+import awacs.s3 as s3
 
-def create_lambda_role(role_name):
+def create_lambda_role(role_name, **kwargs):
     return Role(
             role_name,
             AssumeRolePolicyDocument={
@@ -24,7 +25,7 @@ def create_lambda_role(role_name):
                     ]
                 },
             ManagedPolicyArns=["arn:aws:iam::aws:policy/AWSLambdaExecute"],
-            Policies=[]
+            Policies=kwargs["Policies"]
             )
 
 if __name__ == "__main__":
@@ -55,13 +56,65 @@ if __name__ == "__main__":
         Type="String"
         ))
 
-    lambda_role_dump_teller_response = template.add_resource(
-            create_lambda_role("DumpTellerResponseLambdaRole")
-            )
+    lambda_role_dump_teller_response = template.add_resource(create_lambda_role(
+        "DumpTellerResponseLambdaRole",
+        Policies=[
+            # Policy(
+            #     Version="2012-10-17",
+            #     Statement=[Statement(
+            #         Effect=Allow,
+            #         Action=[s3.GetObject],
+            #         Resource=[Join('', [
+            #             "arn:aws:s3:::", Ref(Bucket), '/*'
+            #             ])
+            #         ])]
+            # )
+            # Policy(
+            #     PolicyName="S3ListBucket",
+            #     PolicyDocument={
+            #         "Version": "2012-10-17",
+            #         "Statement": [
+            #             {
+            #                 "Effect": "Allow",
+            #                 "Action": "s3:ListBucket",
+            #                 "Resource": Join('', [
+            #                     "arn:aws:s3:::", Ref(Bucket)])
+            #                 }
+            #             ]
+            #         }
+            #     ),
+            # Policy(
+            #     PolicyName="SESSendEmail",
+            #     PolicyDocument={
+            #         "Version": "2012-10-17",
+            #         "Statement": [
+            #             {
+            #                 "Effect": "Allow",
+            #                 "Action": "ses:SendEmail",
+            #                 "Resource": "*"
+            #                 }
+            #             ]
+            #         }
+            #     ),
+            # Policy(
+            #     PolicyName="SNSPublish",
+            #     PolicyDocument={
+            #         "Version": "2012-10-17",
+            #         "Statement": [
+            #             {
+            #                 "Effect": "Allow",
+            #                 "Action": "sns:Publish",
+            #                 # "Resource": "!Ref 'DeadLetterQueue'"
+            #                 }
+            #             ]
+            #         }
+            #     )
+        ]
+        ))
 
-    lambda_role_diff_alert = template.add_resource(
-            create_lambda_role("DiffAlertLambdaRole")
-            )
+    lambda_role_diff_alert = template.add_resource(create_lambda_role(
+        "DiffAlertLambdaRole",
+        ))
 
     s3_bucket = template.add_resource(Bucket("Bucket"))
 

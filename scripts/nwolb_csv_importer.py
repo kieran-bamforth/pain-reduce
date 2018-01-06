@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
         for row in csvreader:
             date = datetime.strptime(row['Date'], '%d/%m/%Y')
-            value = row[' Value']
+            value = float(row[' Value'])
             key = BalanceRow(
                     get_month_commencing(date, PAY_DAY),
                     get_account_id(row[' Account Name'])

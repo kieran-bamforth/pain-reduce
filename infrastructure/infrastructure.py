@@ -1,32 +1,6 @@
-from awacs.aws import Policy, Statement, Allow
 from troposphere import Parameter, Output, GetAtt, Ref, Template, Join
-from troposphere.iam import Role
+from troposphere_decorators import create_lambda_role
 from troposphere.s3 import Bucket, BucketPolicy
-
-import awacs.s3 as s3
-
-def create_lambda_role(role_name, **kwargs):
-    return Role(
-            role_name,
-            AssumeRolePolicyDocument={
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": [
-                                "lambda.amazonaws.com"
-                                ]
-                            },
-                        "Action": [
-                            "sts:AssumeRole"
-                            ]
-                        }
-                    ]
-                },
-            ManagedPolicyArns=["arn:aws:iam::aws:policy/AWSLambdaExecute"],
-            Policies=kwargs["Policies"]
-            )
 
 if __name__ == "__main__":
     template = Template()

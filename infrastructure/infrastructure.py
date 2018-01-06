@@ -137,6 +137,34 @@ if __name__ == '__main__':
             ]
         ))
 
+    lambda_role_bin_alert = template.add_resource(create_lambda_role(
+        'BinAlertLambdaRole',
+        Policies=[
+            Policy(
+                PolicyName='SESSendEmail',
+                PolicyDocument={
+                    'Version': '2012-10-17',
+                    'Statement': [{
+                        'Effect': 'Allow',
+                        'Action': 'ses:SendEmail',
+                        'Resource': '*'
+                        }]
+                    }
+                ),
+            Policy(
+                PolicyName='SNSPublish',
+                PolicyDocument={
+                    'Version': '2012-10-17',
+                    'Statement': [{
+                        'Effect': 'Allow',
+                        'Action': 'sns:Publish',
+                        'Resource': Ref(dead_letter_queue)
+                        }]
+                    }
+                )
+            ]
+        ))
+
     s3_bucket_policy = template.add_resource(BucketPolicy(
         'BucketPolicy',
         PolicyDocument={

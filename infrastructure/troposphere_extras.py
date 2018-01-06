@@ -1,6 +1,8 @@
 from troposphere.iam import Role
+import pdb
 
 def create_lambda_role(role_name, **kwargs):
+    policies=kwargs["Policies"]
     return Role(
             role_name,
             AssumeRolePolicyDocument={
@@ -20,6 +22,6 @@ def create_lambda_role(role_name, **kwargs):
                     ]
                 },
             ManagedPolicyArns=["arn:aws:iam::aws:policy/AWSLambdaExecute"],
-            Policies=kwargs["Policies"]
+            Policies=policies
             )
 

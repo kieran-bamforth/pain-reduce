@@ -38,5 +38,7 @@ if __name__ == '__main__':
             except KeyError:
                 balance_rows[key] = {'expenditure': value}
 
-
-    print(balance_rows)
+        print('\n'.join(['{}\t{}\t{}'.format(
+            x.account_id,
+            x.month_commencing.strftime('%Y-%m-%d'),
+            balance_rows[x]['expenditure']) for x in balance_rows]))

@@ -46,3 +46,9 @@ invoke-diff-function: get-diff-function-arn
 
 lint:
 	npm run lint
+
+venv:
+	virtualenv venv
+	./venv/bin/pip install -r requirements.txt
+
+.PHONY: venv

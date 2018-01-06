@@ -1,3 +1,5 @@
-pain-reduce.zip
-node_modules
 *.invoked.txt
+*.pyc
+node_modules
+pain-reduce.zip
+venv

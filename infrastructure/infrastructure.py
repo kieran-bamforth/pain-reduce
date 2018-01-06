@@ -46,6 +46,40 @@ if __name__ == '__main__':
         'DumpTellerResponseLambdaRole',
         Policies=[
             Policy(
+                PolicyName='S3Access',
+                PolicyDocument={
+                    'Version': '2012-10-17',
+                    'Statement': [
+                        {
+                            'Effect': 'Allow',
+                            'Action': 's3.PutObject',
+                            'Resource': Join('', [
+                                'arn:aws:s3:::', Ref(s3_bucket), '/teller-responses/*'
+                                ])
+                            }
+                        ]
+                    }
+                ),
+            Policy(
+                PolicyName='SNSPublish',
+                PolicyDocument={
+                    'Version': '2012-10-17',
+                    'Statement': [
+                        {
+                            'Effect': 'Allow',
+                            'Action': 'sns:Publish',
+                            'Resource': Ref(dead_letter_queue)
+                            }
+                        ]
+                    }
+                )
+            ]
+        ))
+
+    lambda_role_diff_alert = template.add_resource(create_lambda_role(
+        'DiffAlertLambdaRole',
+        Policies=[
+            Policy(
                 PolicyName='S3GetObject',
                 PolicyDocument={
                     'Version': '2012-10-17',
@@ -101,11 +135,6 @@ if __name__ == '__main__':
                     }
                 )
             ]
-        ))
-
-    lambda_role_diff_alert = template.add_resource(create_lambda_role(
-        'DiffAlertLambdaRole',
-        Policies=[]
         ))
 
     s3_bucket_policy = template.add_resource(BucketPolicy(

@@ -41,4 +41,6 @@ if __name__ == '__main__':
         print('\n'.join(['{}\t{}\t{}'.format(
             x.account_id,
             x.month_commencing.strftime('%Y-%m-%d'),
-            balance_rows[x]['expenditure']) for x in balance_rows]))
+            balance_rows[x]['expenditure']) for x in sorted(
+                balance_rows, key=lambda k: k[0], reverse=True)
+            ]))

@@ -11,7 +11,7 @@ def get_month_commencing(date, payday):
     if date.day >= payday:
         return date - timedelta(days=(date.day - payday))
     end_prev_month = date - timedelta(days=date.day)
-    return end_prev_month - timedelta(days=(end_prev_month.days - payday))
+    return end_prev_month - timedelta(days=(end_prev_month.day - payday))
 
 def get_account_id(account_name):
     try:
@@ -66,7 +66,7 @@ if __name__ == '__main__':
                     balance_rows[key].append(row)
                 except KeyError:
                     balance_rows[key] = [row]
-            except:
+            except KeyError:
                 continue
 
         print('\n'.join(['{}\t{}\t\t{}'.format(

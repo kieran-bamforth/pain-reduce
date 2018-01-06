@@ -38,9 +38,9 @@ if __name__ == '__main__':
             except KeyError:
                 balance_rows[key] = {'expenditure': value}
 
-        print('\n'.join(['{}\t{}\t{}'.format(
-            x.account_id,
+        print('\n'.join(['{}\t{}\t\t{}'.format(
             x.month_commencing.strftime('%Y-%m-%d'),
+            x.account_id,
             balance_rows[x]['expenditure']) for x in sorted(
                 balance_rows, key=lambda k: k[0], reverse=True)
             ]))

@@ -8,10 +8,10 @@ import pdb
 PAY_DAY = 15
 
 def get_month_commencing(date, payday):
-    delta_days = date.day + payday
     if date.day >= payday:
-        delta_days = date.day - payday
-    return date - timedelta(days=delta_days)
+        return date - timedelta(days=(date.day - payday))
+    end_prev_month = date - timedelta(days=date.day)
+    return end_prev_month - timedelta(days=(end_prev_month.days - payday))
 
 def get_account_id(account_name):
     try:

@@ -1,5 +1,6 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
+from functools import reduce
 
 import csv
 import pdb
@@ -40,6 +41,14 @@ def get_value(value_str):
         print('Could not get float from string "{}"'.format(value_str))
         raise
 
+def get_expenditure_for_balance_row(balance_row):
+    def fn(acc, row):
+        try:
+            return acc + get_value(row[' Value'])
+        except:
+            return acc
+    return reduce(fn, sorted(balance_row, key=lambda x: x['Date']), 0)
+
 if __name__ == '__main__':
     BalanceRow = namedtuple('BalanceRow', ['month_commencing', 'account_id'])
     balance_rows = {}
@@ -49,21 +58,20 @@ if __name__ == '__main__':
         for row in csvreader:
             try:
                 date = get_date(row['Date'])
-                value = get_value(row[' Value'])
                 key = BalanceRow(
                         get_month_commencing(date, PAY_DAY),
                         get_account_id(row[' Account Name'])
                         )
                 try:
-                    balance_rows[key]['expenditure'] += value
+                    balance_rows[key].append(row)
                 except KeyError:
-                    balance_rows[key] = {'expenditure': value}
+                    balance_rows[key] = [row]
             except:
                 continue
 
         print('\n'.join(['{}\t{}\t\t{}'.format(
             x.month_commencing.strftime('%Y-%m-%d'),
             x.account_id,
-            balance_rows[x]['expenditure']) for x in sorted(
-                balance_rows, key=lambda k: k[0], reverse=True)
-            ]))
+            get_expenditure_for_balance_row(balance_rows[x])) for x in sorted(
+                balance_rows, key=lambda k: k[0]
+            )]))

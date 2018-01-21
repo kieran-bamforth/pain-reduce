@@ -1,5 +1,7 @@
+from troposphere import GetAtt
 from troposphere import Ref
-from troposphere.awslambda import Function, Code, DeadLetterConfig
+from troposphere.awslambda import Function, Code, DeadLetterConfig, Permission
+from troposphere.events import Rule, Target
 from troposphere.iam import Role
 
 import pdb
@@ -37,3 +39,24 @@ def create_lambda_fn(name, code, dead_letter_queue, **kwargs):
     kwargs["Timeout"] = 30
     kwargs["DeadLetterConfig"] = DeadLetterConfig(TargetArn=Ref(dead_letter_queue))
     return Function(name, **kwargs)
+
+def create_lambda_fn_cron(name_prefix, lambda_fn, schedule_expression):
+    pdb.set_trace()
+    rule = Rule(
+            '{}EventRule'.format(name_prefix),
+            ScheduleExpression=schedule_expression,
+            Targets=[Target(
+                Arn=GetAtt(lambda_fn, 'Arn'),
+                Id=lambda_fn.name
+                )]
+            )
+
+    permission = Permission(
+            '{}FunctionPermission'.format(name_prefix),
+            Action="lambda:InvokeFunction",
+            FunctionName=GetAtt(lambda_fn, 'Arn'),
+            Principal='events.amazonaws.com',
+            SourceArn=GetAtt(rule, 'Arn')
+            )
+
+    return (rule, permission)

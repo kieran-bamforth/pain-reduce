@@ -3,7 +3,7 @@ from troposphere.awslambda import Code, Environment
 from troposphere.iam import Policy
 from troposphere.s3 import Bucket, BucketPolicy
 from troposphere.sns import Topic, Subscription
-from troposphere_extras import create_lambda_role, create_lambda_fn_node
+from troposphere_extras import create_lambda_role, create_lambda_fn_node, create_lambda_fn_cron
 
 if __name__ == '__main__':
     template = Template()
@@ -249,5 +249,13 @@ if __name__ == '__main__':
         Handler='src/diff-alert.diffAlert',
         Role=GetAtt(lambda_role_diff_alert, 'Arn')
         ))
+
+    lambda_fn_crons = [
+            create_lambda_fn_cron('DumpTeller', lambda_fn_dump_teller, 'cron(0 9 ? * MON *)'),
+            create_lambda_fn_cron('BinAlert', lambda_fn_bin_alert, 'cron(0 18 ? * TUE *)')
+            ]
+    for rule, permission in lambda_fn_crons:
+        template.add_resource(rule)
+        template.add_resource(permission)
 
     print(template.to_json())

@@ -1,33 +1,34 @@
 from troposphere import Parameter, Output, GetAtt, Ref, Template, Join
+from troposphere.awslambda import Code, Environment
 from troposphere.iam import Policy
 from troposphere.s3 import Bucket, BucketPolicy
 from troposphere.sns import Topic, Subscription
-from troposphere_extras import create_lambda_role
+from troposphere_extras import create_lambda_role, create_lambda_fn_node
 
 if __name__ == '__main__':
     template = Template()
 
-    template.add_parameter(Parameter(
+    param_latest_package_version = template.add_parameter(Parameter(
         'LatestPackageVersion',
         Type='String'
         ))
-    template.add_parameter(Parameter(
+    param_package_bucket = template.add_parameter(Parameter(
         'PackageBucket',
         Type='String'
         ))
-    template.add_parameter(Parameter(
+    param_package_key = template.add_parameter(Parameter(
         'PackageKey',
         Type='String'
         ))
-    template.add_parameter(Parameter(
+    param_teller_auth = template.add_parameter(Parameter(
         'TellerAuth',
         Type='String'
         ))
-    template.add_parameter(Parameter(
+    param_email_address = template.add_parameter(Parameter(
         'EmailAddress',
         Type='String'
         ))
-    template.add_parameter(Parameter(
+    param_property_ref_no = template.add_parameter(Parameter(
         'PropertyRefNo',
         Type='String'
         ))
@@ -203,6 +204,25 @@ if __name__ == '__main__':
                 ]
             },
         Bucket=Ref(s3_bucket)
+        ))
+
+    lambda_code = Code(
+            S3Bucket=Ref(param_package_bucket),
+            S3Key=Ref(param_package_key),
+            S3ObjectVersion=Ref(param_latest_package_version)
+        )
+
+    lambda_fn_dump_teller = template.add_resource(create_lambda_fn_node(
+        'DumpTellerLambdaFunction',
+        lambda_code,
+        dead_letter_queue,
+        Description='Makes a couple reqeusts to the Teller API and dumps the responses to S3.',
+        Environment=Environment(Variables={
+            'AUTH': Ref(param_teller_auth),
+            'BUCKET': Ref(s3_bucket)
+            }),
+        Handler='src/dump-teller-responses.index',
+        Role=GetAtt(lambda_role_dump_teller_response, 'Arn')
         ))
 
     print(template.to_json())

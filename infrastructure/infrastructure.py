@@ -225,4 +225,17 @@ if __name__ == '__main__':
         Role=GetAtt(lambda_role_dump_teller_response, 'Arn')
         ))
 
+    lambda_fn_bin_alert = template.add_resource(create_lambda_fn_node(
+        'BinAlertLambdaFunction',
+        lambda_code,
+        dead_letter_queue,
+        Description='Sends what bins to take out',
+        Environment=Environment(Variables={
+            'EMAIL_ADDRESS': Ref(param_teller_auth),
+            'PROPERTY_REF_NO': Ref(param_property_ref_no)
+            }),
+        Handler='src/bin-alert.binAlert',
+        Role=GetAtt(lambda_role_bin_alert, 'Arn')
+        ))
+
     print(template.to_json())

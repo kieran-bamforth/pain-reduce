@@ -238,4 +238,16 @@ if __name__ == '__main__':
         Role=GetAtt(lambda_role_bin_alert, 'Arn')
         ))
 
+    lambda_fn_diff_alert = template.add_resource(create_lambda_fn_node(
+        'DiffAlertLambdaFunction',
+        lambda_code,
+        dead_letter_queue,
+        Description='Diffs a new S3 object against an older one, and alerts if there is a difference.',
+        Environment=Environment(Variables={
+            'EMAIL_ADDRESS': Ref(param_email_address)
+            }),
+        Handler='src/diff-alert.diffAlert',
+        Role=GetAtt(lambda_role_diff_alert, 'Arn')
+        ))
+
     print(template.to_json())

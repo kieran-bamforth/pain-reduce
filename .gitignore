@@ -1,5 +1,6 @@
 *.invoked.txt
 *.pyc
+infrastructure/infrastructure.json
 node_modules
 pain-reduce.zip
 venv

@@ -53,7 +53,7 @@ if __name__ == '__main__':
                     'Statement': [
                         {
                             'Effect': 'Allow',
-                            'Action': 's3.PutObject',
+                            'Action': 's3:PutObject',
                             'Resource': Join('', [
                                 'arn:aws:s3:::', Ref(s3_bucket), '/teller-responses/*'
                                 ])
@@ -87,7 +87,7 @@ if __name__ == '__main__':
                     'Statement': [
                         {
                             'Effect': 'Allow',
-                            'Action': 's3.GetObject',
+                            'Action': 's3:GetObject',
                             'Resource': Join('', [
                                 'arn:aws:s3:::', Ref(s3_bucket), '/*'
                                 ])

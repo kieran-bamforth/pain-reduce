@@ -51,7 +51,7 @@ def create_lambda_fn_cron(name_prefix, lambda_fn, schedule_expression):
             )
 
     permission = Permission(
-            '{}FunctionPermission'.format(name_prefix),
+            '{}LambdaFunctionPermission'.format(name_prefix),
             Action="lambda:InvokeFunction",
             FunctionName=GetAtt(lambda_fn, 'Arn'),
             Principal='events.amazonaws.com',

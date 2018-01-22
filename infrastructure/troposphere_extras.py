@@ -41,7 +41,6 @@ def create_lambda_fn(name, code, dead_letter_queue, **kwargs):
     return Function(name, **kwargs)
 
 def create_lambda_fn_cron(name_prefix, lambda_fn, schedule_expression):
-    pdb.set_trace()
     rule = Rule(
             '{}EventRule'.format(name_prefix),
             ScheduleExpression=schedule_expression,

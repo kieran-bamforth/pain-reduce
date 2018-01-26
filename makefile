@@ -16,9 +16,10 @@ upload-package: zip-package
 	aws s3 cp $(PROJECT_NAME).zip s3://$(PACKAGE_BUCKET)/$(PACKAGE_KEY)
 
 cloudformation-stack: get-latest-package-version
+	python infrastructure/infrastructure.py > infrastructure/infrastructure.json
 	aws cloudformation $(CF_METHOD)-stack \
 		--stack-name $(CF_STACK_NAME) \
-		--template-body file://infrastructure.yml \
+		--template-body file://infrastructure/infrastructure.json \
 		--capabilities CAPABILITY_IAM \
 		--parameters \
 			ParameterKey=LatestPackageVersion,ParameterValue=$(LATEST_PACKAGE_VERSION) \

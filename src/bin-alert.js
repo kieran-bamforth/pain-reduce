@@ -44,7 +44,7 @@ module.exports = {
       callback();
     })
       .catch((error) => {
-        throw error;
+        callback(error)
       });
   },
 }

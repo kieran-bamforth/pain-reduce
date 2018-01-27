@@ -28,6 +28,10 @@ if __name__ == '__main__':
         'EmailAddress',
         Type='String'
         ))
+    param_post_code = template.add_parameter(Parameter(
+        'PostCode',
+        Type='String'
+        ))
     param_property_ref_no = template.add_parameter(Parameter(
         'PropertyRefNo',
         Type='String'
@@ -232,7 +236,8 @@ if __name__ == '__main__':
         Description='Sends what bins to take out',
         Environment=Environment(Variables={
             'EMAIL_ADDRESS': Ref(param_teller_auth),
-            'PROPERTY_REF_NO': Ref(param_property_ref_no)
+            'PROPERTY_REF_NO': Ref(param_property_ref_no),
+            'POST_CODE': Ref(param_post_code),
             }),
         Handler='src/bin-alert.binAlert',
         Role=GetAtt(lambda_role_bin_alert, 'Arn')

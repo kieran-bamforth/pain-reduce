@@ -1,6 +1,7 @@
 const aws = require('aws-sdk');
 const bluebird = require('bluebird');
 const request = require('request-promise');
+const helper = request('./helper.js');
 
 aws.config.setPromisesDependency(bluebird);
 
@@ -8,19 +9,18 @@ const ses = new aws.SES();
 
 module.exports = {
   binAlert: function binAlert(event, context, callback) {
+    const postCode=  process.env.POST_CODE;
     const propertyRefNo = process.env.PROPERTY_REF_NO;
     const emailAddress = process.env.EMAIL_ADDRESS;
 
     const options = {
-      method: 'POST',
-      url: 'https://www.oldham.gov.uk/site/custom_scripts/bin_collection_postcode_search_functions.php',
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
-      },
-      body: `getPremiseDetailsByUniquePropertyReferenceNumber=true&propertyRefNo=${propertyRefNo}`
+      method: 'GET',
+      url: `https://www.oldham.gov.uk/bin-collection-days?postcode=${postCode}&uprn=${propertyRefNo}`,
     };
 
     request(options).then((result) => {
+      timetable = helper.extractBinTimetable(result);
+      parsedTimetable = helper.parsedTimetable(timetable);
       return ses.sendEmail({
         Destination: {
           ToAddresses: [emailAddress],
@@ -29,7 +29,7 @@ module.exports = {
           Body: {
             Html: {
               Charset: 'UTF-8',
-              Data: result,
+              Data: timetable,
             },
           },
           Subject: {

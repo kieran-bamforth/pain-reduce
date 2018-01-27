@@ -27,22 +27,8 @@ cloudformation-stack: get-latest-package-version
 			ParameterKey=PackageKey,ParameterValue=$(PACKAGE_KEY) \
 			ParameterKey=TellerAuth,ParameterValue="$(TELLER_AUTH)" \
 			ParameterKey=EmailAddress,ParameterValue="$(EMAIL_ADDRESS)" \
-			ParameterKey=PropertyRefNo,ParameterValue="$(PROPERTY_REF_NO)"
-
-cloudformation-diff: get-latest-package-version
-	python infrastructure/infrastructure.py > infrastructure/infrastructure.json
-	aws cloudformation create-change-set \
-		--stack-name $(CF_STACK_NAME) \
-		--template-body file://infrastructure/infrastructure.json \
-		--capabilities CAPABILITY_IAM \
-		--change-set-name test \
-		--parameters \
-			ParameterKey=LatestPackageVersion,ParameterValue=$(LATEST_PACKAGE_VERSION) \
-			ParameterKey=PackageBucket,ParameterValue=$(PACKAGE_BUCKET) \
-			ParameterKey=PackageKey,ParameterValue=$(PACKAGE_KEY) \
-			ParameterKey=TellerAuth,ParameterValue="$(TELLER_AUTH)" \
-			ParameterKey=EmailAddress,ParameterValue="$(EMAIL_ADDRESS)" \
-			ParameterKey=PropertyRefNo,ParameterValue="$(PROPERTY_REF_NO)"
+			ParameterKey=PropertyRefNo,ParameterValue="$(PROPERTY_REF_NO)" \
+			ParameterKey=PostCode,ParameterValue="$(POST_CODE)"
 
 get-latest-package-version:
 	$(eval LATEST_PACKAGE_VERSION := $(shell aws s3api list-object-versions --bucket $(PACKAGE_BUCKET) --prefix $(PACKAGE_KEY) \

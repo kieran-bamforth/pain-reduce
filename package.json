@@ -13,6 +13,7 @@
   "dependencies": {
     "aws-sdk": "^2.112.0",
     "bluebird": "^3.5.0",
+    "cheerio": "^1.0.0-rc.2",
     "deep-diff": "^0.3.8",
     "handlebars": "^4.0.10",
     "request": "^2.81.0",

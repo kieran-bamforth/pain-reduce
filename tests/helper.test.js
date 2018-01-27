@@ -2,6 +2,8 @@ const assert = require('chai').assert;
 const deep = require('deep-diff');
 const helper = require('../src/helper');
 const mocha = require('mocha');
+const fs = require('fs');
+const path = require('path');
 
 suite('helper.js', () => {
 
@@ -74,8 +76,7 @@ suite('helper.js', () => {
       assert.throws(() => { helper.getObjectModifiedBefore('2017-08-08T10:52:59.000Z', null); } );
     });
   });
-
-  suite('mergeDiffsWithToObject', () => {
+suite('mergeDiffsWithToObject', () => {
     test('should merge the "to" objects with the diffs', () => {
       const diffs = [
         { path: [0, 'genericKey'] }
@@ -94,6 +95,36 @@ suite('helper.js', () => {
         expected
       );
     });
+
+    suite('extractBinTimetable', () => {
+      const contents = fs.readFileSync(path.join(__dirname, './oldham-bin-page.html')).toString('utf-8')
+      const expected = fs.readFileSync(path.join(__dirname, './oldham-bin-page-extracted.html')).toString('utf-8').trim();
+      it('should get the dates and colours of the latest bins to go out', () => {
+        assert.strictEqual(
+          helper.extractBinTimetable(contents),
+          expected
+        );
+      });
+    });
+
+    suite('parseBinTimetable', () => {
+      const contents = fs.readFileSync(path.join(__dirname, './oldham-bin-page-extracted.html')).toString('utf-8');
+      it('should get the dates and colours of the latest bins to go out', () => {
+        expected = {
+          "next": "31/01/2018",
+          "timetable": {
+            "31/01/2018": ["Grey",  "Green"],
+            "07/02/2018": ["Blue"],
+            "14/02/2018": ["Brown"]
+          }
+        }
+        assert.deepEqual(
+          helper.parseBinTimetable(contents),
+          expected
+        );
+      });
+    });
+
   });
 
   suite('filterDiffsByKind', () => {
@@ -135,5 +166,4 @@ suite('helper.js', () => {
       assert.isUndefined(deep.diff({}, {}));
     });
   });
-
 });

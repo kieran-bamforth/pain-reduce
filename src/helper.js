@@ -1,3 +1,5 @@
+const cheerio = require('cheerio');
+
 module.exports = {
   getKeyPath: function getKeyPath(key) {
     if (typeof key !== 'string') {
@@ -35,4 +37,39 @@ module.exports = {
   filterDiffsByKind: function filterDiffsByKind(diffs, kind) {
     return diffs.filter(element => element.kind === kind);
   },
+  extractBinTimetable: function extractBinTimetable(timetableHtml) {
+    const $ = cheerio.load(timetableHtml);
+    return $.html($('#bin_collections'));
+  },
+  parseBinTimetable: function parseBinTimetable(timetableHtml) {
+    const $ = cheerio.load(timetableHtml)
+    const timetable = {}
+
+    $('tbody > tr').each((i, elem) => {
+      const tds = $(elem).children()
+      const colour = tds.first().text().split(' ').shift()
+      const date = tds.last().text()
+
+      if (Object.keys(timetable).indexOf(date) == -1 ) {
+        timetable[date] = []
+      }
+
+      timetable[date].push(colour)
+    });
+
+    nearestDate = Object.keys(timetable).reduce((currentDateStr, nextDateStr) => {
+      const [currentDay, currentMonth, currentYear] = currentDateStr.split("/");
+      const [nextDay, nextMonth, nextYear] = nextDateStr.split("/");
+
+      const currentDate = new Date(currentYear, currentMonth-1, currentDay);
+      const nextDate = new Date(nextYear, nextMonth-1, nextDay);
+
+      return (currentDate < nextDate) ? currentDateStr : nextDateStr;
+    })
+
+    return {
+      "next": nearestDate,
+      "timetable": timetable
+    }
+  }
 };

@@ -235,7 +235,7 @@ if __name__ == '__main__':
         dead_letter_queue,
         Description='Sends what bins to take out',
         Environment=Environment(Variables={
-            'EMAIL_ADDRESS': Ref(param_teller_auth),
+            'EMAIL_ADDRESS': Ref(param_email_address),
             'PROPERTY_REF_NO': Ref(param_property_ref_no),
             'POST_CODE': Ref(param_post_code),
             }),

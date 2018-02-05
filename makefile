@@ -7,11 +7,11 @@ TELLER_AUTH=change-me
 
 zip-package:
 	rm -rf ./node_modules
-	npm install --production
+	yarn install --production
 	rm $(PROJECT_NAME).zip || true
 	zip -r $(PROJECT_NAME).zip ./src
 	zip -r $(PROJECT_NAME).zip ./node_modules
-	npm install
+	yarn install
 
 upload-package: zip-package
 	aws s3 cp $(PROJECT_NAME).zip s3://$(PACKAGE_BUCKET)/$(PACKAGE_KEY)

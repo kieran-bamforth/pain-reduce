@@ -5,12 +5,13 @@ PACKAGE_KEY=lambda-packages/$(PROJECT_NAME).zip
 PROJECT_NAME=pain-reduce
 TELLER_AUTH=change-me
 
-install-deps:
+zip-package:
+	rm -rf ./node_modules
 	npm install --production
-
-zip-package: install-deps
 	rm $(PROJECT_NAME).zip || true
-	zip -r ./$(PROJECT_NAME).zip ./
+	zip -r $(PROJECT_NAME).zip ./src
+	zip -r $(PROJECT_NAME).zip ./node_modules
+	npm install
 
 upload-package: zip-package
 	aws s3 cp $(PROJECT_NAME).zip s3://$(PACKAGE_BUCKET)/$(PACKAGE_KEY)

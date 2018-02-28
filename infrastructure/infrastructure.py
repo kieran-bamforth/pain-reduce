@@ -142,6 +142,40 @@ if __name__ == '__main__':
             ]
         ))
 
+    lambda_role_get_object = template.add_resource(create_lambda_role(
+        'GetObjectLambdaRole',
+        Policies=[
+            Policy(
+                PolicyName='SNSPublish',
+                PolicyDocument={
+                    'Version': '2012-10-17',
+                    'Statement': [
+                        {
+                            'Effect': 'Allow',
+                            'Action': 'sns:Publish',
+                            'Resource': Ref(dead_letter_queue)
+                            }
+                        ]
+                    }
+                ),
+            Policy(
+                PolicyName='S3GetObject',
+                PolicyDocument={
+                    'Version': '2012-10-17',
+                    'Statement': [
+                        {
+                            'Effect': 'Allow',
+                            'Action': 's3:GetObject',
+                            'Resource': Join('', [
+                                'arn:aws:s3:::', Ref(s3_bucket), '/*'
+                                ])
+                            }
+                        ]
+                    }
+                )
+            ]
+        ))
+
     lambda_role_bin_alert = template.add_resource(create_lambda_role(
         'BinAlertLambdaRole',
         Policies=[
@@ -253,6 +287,15 @@ if __name__ == '__main__':
             }),
         Handler='src/diff-alert.diffAlert',
         Role=GetAtt(lambda_role_diff_alert, 'Arn')
+        ))
+
+    get_object_fn = template.add_resource(create_lambda_fn_node(
+        'GetObjectLambdaFunction',
+        lambda_code,
+        dead_letter_queue,
+        Description='Gets an object from S3 and returns its body',
+        Handler='src/get-object.getObject',
+        Role=GetAtt(lambda_role_get_object, 'Arn')
         ))
 
     lambda_fn_crons = [

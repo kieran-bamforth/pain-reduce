@@ -1,5 +1,7 @@
 *.invoked.txt
 *.pyc
+client-secret.json
+credentials
 infrastructure/infrastructure.json
 node_modules
 pain-reduce.zip

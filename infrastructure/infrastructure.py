@@ -199,6 +199,25 @@ if __name__ == '__main__':
             ]
         ))
 
+    lambda_role_extract_budget_fn = template.add_resource(create_lambda_role(
+        'ExtractBudgetRole',
+        Policies=[
+            Policy(
+                PolicyName='SNSPublish',
+                PolicyDocument={
+                    'Version': '2012-10-17',
+                    'Statement': [
+                        {
+                            'Effect': 'Allow',
+                            'Action': 'sns:Publish',
+                            'Resource': Ref(dead_letter_queue)
+                            }
+                        ]
+                    }
+                )
+            ]
+        ))
+
     lambda_role_bin_alert = template.add_resource(create_lambda_role(
         'BinAlertLambdaRole',
         Policies=[
@@ -331,6 +350,15 @@ if __name__ == '__main__':
             }),
         Handler='src/daily-dollar.queryMoneySheet',
         Role=GetAtt(lambda_role_query_money_sheet, 'Arn')
+        ))
+
+    extract_budget_fn = template.add_resource(create_lambda_fn_node(
+        'ExtractBudgetFunction',
+        lambda_code,
+        dead_letter_queue,
+        Description='Extracts the budget from a Money sheet query.',
+        Handler='src/daily-dollar.extractBudget',
+        Role=GetAtt(lambda_role_extract_budget_fn, 'Arn')
         ))
 
     lambda_fn_crons = [

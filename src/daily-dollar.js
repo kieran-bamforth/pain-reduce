@@ -29,5 +29,20 @@ module.exports = {
       }
       callback(null, {data: JSON.stringify(response)});
     });
+  },
+  extractBudget: function extractBudget(event, context, callback) {
+    const data = JSON.parse(event.data);
+    const rows = data.values.filter(row => row[4] !== 'FALSE');
+
+    if (rows.length !== 1) {
+      throw new Error(`Could not find budget (rows.length was ${rows.length})`);
+    }
+
+    const row = rows[0];
+    callback(null, {
+      "balance": row[2],
+      "money_per_day": row[7],
+      "money_per_week": row[8]
+    });
   }
 }

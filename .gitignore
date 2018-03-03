@@ -5,4 +5,5 @@ credentials
 infrastructure/infrastructure.json
 node_modules
 pain-reduce.zip
+token.json
 venv

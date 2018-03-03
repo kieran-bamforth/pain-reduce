@@ -24,6 +24,10 @@ if __name__ == '__main__':
         'TellerAuth',
         Type='String'
         ))
+    param_money_spreadsheet_id = template.add_parameter(Parameter(
+        'MoneySpreadsheetId',
+        Type='String'
+        ))
     param_email_address = template.add_parameter(Parameter(
         'EmailAddress',
         Type='String'
@@ -176,6 +180,25 @@ if __name__ == '__main__':
             ]
         ))
 
+    lambda_role_query_money_sheet = template.add_resource(create_lambda_role(
+        'QueryMoneySheetRole',
+        Policies=[
+            Policy(
+                PolicyName='SNSPublish',
+                PolicyDocument={
+                    'Version': '2012-10-17',
+                    'Statement': [
+                        {
+                            'Effect': 'Allow',
+                            'Action': 'sns:Publish',
+                            'Resource': Ref(dead_letter_queue)
+                            }
+                        ]
+                    }
+                )
+            ]
+        ))
+
     lambda_role_bin_alert = template.add_resource(create_lambda_role(
         'BinAlertLambdaRole',
         Policies=[
@@ -296,6 +319,18 @@ if __name__ == '__main__':
         Description='Gets an object from S3 and returns its body',
         Handler='src/get-object.getObject',
         Role=GetAtt(lambda_role_get_object, 'Arn')
+        ))
+
+    query_money_sheet_fn = template.add_resource(create_lambda_fn_node(
+        'QueryMoneySheetFunction',
+        lambda_code,
+        dead_letter_queue,
+        Description='Queries the Money Spreadsheet',
+        Environment=Environment(Variables={
+            'MONEY_SPREADSHEET_ID': Ref(param_money_spreadsheet_id),
+            }),
+        Handler='src/daily-dollar.queryMoneySheet',
+        Role=GetAtt(lambda_role_query_money_sheet, 'Arn')
         ))
 
     lambda_fn_crons = [

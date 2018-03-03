@@ -14,7 +14,7 @@ module.exports = {
     let getObjectPromise = s3.getObject(params).promise();
 
     getObjectPromise.then((data) => {
-      callback(null, {Body: data.Body.toString('utf-8')});
+      callback(null, {body: data.Body.toString('utf-8')});
     }).catch((error) => {
       throw error;
     });

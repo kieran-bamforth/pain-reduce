@@ -4,6 +4,7 @@ PACKAGE_BUCKET=kieran-bamforth
 PACKAGE_KEY=lambda-packages/$(PROJECT_NAME).zip
 PROJECT_NAME=pain-reduce
 TELLER_AUTH=change-me
+MONEY_SPREADSHEET_ID=1tdFtrQbeDSo_3ofbcS86k9U_xVcgoJLMZ7YEXHPbfD8
 
 zip-package:
 	rm -rf ./node_modules
@@ -29,7 +30,8 @@ cloudformation-stack: get-latest-package-version
 			ParameterKey=TellerAuth,ParameterValue="$(TELLER_AUTH)" \
 			ParameterKey=EmailAddress,ParameterValue="$(EMAIL_ADDRESS)" \
 			ParameterKey=PropertyRefNo,ParameterValue="$(PROPERTY_REF_NO)" \
-			ParameterKey=PostCode,ParameterValue="$(POST_CODE)"
+			ParameterKey=PostCode,ParameterValue="$(POST_CODE)" \
+			ParameterKey=MoneySpreadsheetId,ParameterValue="$(MONEY_SPREADSHEET_ID)"
 
 get-latest-package-version:
 	$(eval LATEST_PACKAGE_VERSION := $(shell aws s3api list-object-versions --bucket $(PACKAGE_BUCKET) --prefix $(PACKAGE_KEY) \

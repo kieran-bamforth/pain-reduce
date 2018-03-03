@@ -4,6 +4,7 @@ PACKAGE_BUCKET=kieran-bamforth
 PACKAGE_KEY=lambda-packages/$(PROJECT_NAME).zip
 PROJECT_NAME=pain-reduce
 TELLER_AUTH=change-me
+INFRASTRUCTURE_JSON=infrastructure/infrastructure.json
 
 zip-package:
 	rm -rf ./node_modules
@@ -15,6 +16,12 @@ zip-package:
 
 upload-package: zip-package
 	aws s3 cp $(PROJECT_NAME).zip s3://$(PACKAGE_BUCKET)/$(PACKAGE_KEY)
+
+cfn-package:
+	./venv/bin/python infrastructure/infrastructure.py > $(INFRASTRUCTURE_JSON)
+	aws cloudformation package \
+		--template-file $(INFRASTRUCTURE_JSON) \
+		--s3-bucket $(PACKAGE_BUCKET)
 
 cloudformation-stack: get-latest-package-version
 	./venv/bin/python infrastructure/infrastructure.py > infrastructure/infrastructure.json

@@ -439,6 +439,11 @@ if __name__ == '__main__':
                 "ExtractBudget": {
                     "Type": "Task",
                     "Resource": "arn:aws:lambda:eu-west-1:855277617897:function:pain-reduce-ExtractBudgetFunction-P17272M4YTZG",
+                    "Next": "EmailBudget"
+                    },
+                "EmailBudget": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:lambda:eu-west-1:855277617897:function:pain-reduce-EmailBudgetLambdaFunction-112733VM3N8XC",
                     "End": True
                     }
                 }

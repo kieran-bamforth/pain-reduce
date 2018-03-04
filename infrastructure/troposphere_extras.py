@@ -59,3 +59,27 @@ def create_lambda_fn_cron(name_prefix, lambda_fn, schedule_expression):
             )
 
     return (rule, permission)
+
+def create_stepfnjson_getobject(prefix, key):
+    sn_get_object_data = 'GetObjectData_{}'.format(prefix)
+    sn_get_object = 'GetObject_{}'.format(prefix)
+
+    return {
+            "StartAt": sn_get_object_data,
+            "States": {
+                sn_get_object_data: {
+                    "Type": "Pass",
+                    "Result": {
+                        "key": key,
+                        "bucket": 'pain-reduce-bucket-1pgi6btsv9d97'
+                        },
+                    "Next": sn_get_object
+                    },
+                sn_get_object: {
+                    "Type": "Task",
+                    "Resource": "arn:aws:lambda:eu-west-1:855277617897:function:pain-reduce-GetObjectLambdaFunction-BPKE1Z01IP1R",
+                    "End": True
+                    }
+                }
+            }
+

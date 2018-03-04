@@ -1,9 +1,13 @@
+import json
+
 from troposphere import Parameter, Output, GetAtt, Ref, Template, Join
 from troposphere.awslambda import Code, Environment
 from troposphere.iam import Policy
+from troposphere.iam import Role
 from troposphere.s3 import Bucket, BucketPolicy
 from troposphere.sns import Topic, Subscription
-from troposphere_extras import create_lambda_role, create_lambda_fn_node, create_lambda_fn_cron
+from troposphere.stepfunctions import StateMachine
+from troposphere_extras import create_lambda_role, create_lambda_fn_node, create_lambda_fn_cron, create_stepfnjson_getobject
 
 if __name__ == '__main__':
     template = Template()
@@ -368,5 +372,60 @@ if __name__ == '__main__':
     for rule, permission in lambda_fn_crons:
         template.add_resource(rule)
         template.add_resource(permission)
+
+    stepfn_role_dailydollar = template.add_resource(Role(
+        'DailyDollarRole',
+        AssumeRolePolicyDocument={
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": [
+                            "states.amazonaws.com"
+                            ]
+                        },
+                    "Action": [
+                        "sts:AssumeRole"
+                        ]
+                    }
+                ]
+            },
+        ManagedPolicyArns=["arn:aws:iam::aws:policy/service-role/AWSLambdaRole"],
+        ))
+
+    template.add_resource(StateMachine(
+        'DailyDollarStepFn',
+        RoleArn=GetAtt(stepfn_role_dailydollar, 'Arn'),
+        DefinitionString=json.dumps({
+            "Comment": "An example of the Amazon States Language using a parallel state to execute two branches at the same time.",
+            "StartAt": "Parallel",
+            "States": {
+                "Parallel": {
+                    "Type": "Parallel",
+                    "Next": "QueryMoneySpreadsheet",
+                    "Branches": [
+                        create_stepfnjson_getobject('secret', 'client-secret.json'),
+                        create_stepfnjson_getobject('token', 'token.json'),
+                        {
+                            "StartAt": "GetRangeData",
+                            "States": {
+                                "GetRangeData": {
+                                    "Type": "Pass",
+                                    "Result": { "range": "Budget!A2:I" },
+                                    "End": True
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                "QueryMoneySpreadsheet": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:lambda:eu-west-1:855277617897:function:pain-reduce-QueryMoneySheetFunction-1RMUBUK61RQDO ",
+                    "End": True
+                    }
+                }
+            })
+        ))
 
     print(template.to_json())

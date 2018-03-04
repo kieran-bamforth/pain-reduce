@@ -1,7 +1,9 @@
+const emailAddress = process.env.EMAIL_ADDRESS;
 const spreadsheetId = process.env.MONEY_SPREADSHEET_ID;
 
 const google = require('googleapis');
 const googleAuth = require('google-auth-library');
+const helper = require('./helper.js')
 const sheets = google.sheets('v4');
 
 module.exports = {
@@ -43,6 +45,16 @@ module.exports = {
       "balance": row[2],
       "money_per_day": row[7],
       "money_per_week": row[8]
+    });
+  },
+  emailBudget: function emailBudget(event, context, callback) {
+    const subject = `Daily Dollar: ${event.money_per_day} available today.`;
+    const body = `You have ${event.balance} in the bank&mdash;that&rsquo;s equal to ${event.money_per_week} weekly, or ${event.money_per_day} daily.`;
+
+    helper.sendMail(emailAddress, subject, body).then((result) => {
+      callback(null, {});
+    }).catch((error) => {
+      callback(error);
     });
   }
 }

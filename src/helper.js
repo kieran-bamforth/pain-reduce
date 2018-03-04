@@ -1,4 +1,10 @@
+const aws = require('aws-sdk');
+const bluebird = require('bluebird');
 const cheerio = require('cheerio');
+
+aws.config.setPromisesDependency(bluebird);
+
+const ses = new aws.SES();
 
 module.exports = {
   getKeyPath: function getKeyPath(key) {
@@ -71,5 +77,25 @@ module.exports = {
       "next": nearestDate,
       "timetable": timetable
     }
+  },
+  sendMail: function sendMail(emailAddress, subject, body) {
+      return ses.sendEmail({
+        Destination: {
+          ToAddresses: [emailAddress],
+        },
+        Message: {
+          Body: {
+            Html: {
+              Charset: 'UTF-8',
+              Data: body
+            },
+          },
+          Subject: {
+            Charset: 'UTF-8',
+            Data: subject,
+          },
+        },
+        Source: emailAddress,
+      }).promise();
   }
 };

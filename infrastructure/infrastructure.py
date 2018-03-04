@@ -222,7 +222,7 @@ if __name__ == '__main__':
             ]
         ))
 
-    lambda_role_bin_alert = template.add_resource(create_lambda_role(
+    lambda_role_can_email = template.add_resource(create_lambda_role(
         'BinAlertLambdaRole',
         Policies=[
             Policy(
@@ -320,7 +320,19 @@ if __name__ == '__main__':
             'POST_CODE': Ref(param_post_code),
             }),
         Handler='src/bin-alert.binAlert',
-        Role=GetAtt(lambda_role_bin_alert, 'Arn')
+        Role=GetAtt(lambda_role_can_email, 'Arn')
+        ))
+
+    lambda_fn_email_budget = template.add_resource(create_lambda_fn_node(
+        'EmailBudgetLambdaFunction',
+        lambda_code,
+        dead_letter_queue,
+        Description='Send an email to explain how much money I have left',
+        Environment=Environment(Variables={
+            'EMAIL_ADDRESS': Ref(param_email_address),
+            }),
+        Handler='src/daily-dollar.emailBudget',
+        Role=GetAtt(lambda_role_can_email, 'Arn')
         ))
 
     lambda_fn_diff_alert = template.add_resource(create_lambda_fn_node(

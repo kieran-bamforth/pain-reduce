@@ -422,6 +422,11 @@ if __name__ == '__main__':
                 "QueryMoneySpreadsheet": {
                     "Type": "Task",
                     "Resource": "arn:aws:lambda:eu-west-1:855277617897:function:pain-reduce-QueryMoneySheetFunction-1RMUBUK61RQDO",
+                    "Next": "ExtractBudget"
+                    },
+                "ExtractBudget": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:lambda:eu-west-1:855277617897:function:pain-reduce-ExtractBudgetFunction-P17272M4YTZG",
                     "End": True
                     }
                 }

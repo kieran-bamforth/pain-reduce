@@ -16,7 +16,7 @@ module.exports = {
     getObjectPromise.then((data) => {
       callback(null, {body: data.Body.toString('utf-8')});
     }).catch((error) => {
-      throw error;
+      callback(error);
     });
   }
 }

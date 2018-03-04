@@ -405,8 +405,8 @@ if __name__ == '__main__':
                     "Type": "Parallel",
                     "Next": "QueryMoneySpreadsheet",
                     "Branches": [
-                        create_stepfnjson_getobject('secret', 'client-secret.json'),
-                        create_stepfnjson_getobject('token', 'token.json'),
+                        create_stepfnjson_getobject('secret', 'daily-dollar/client-secret.json'),
+                        create_stepfnjson_getobject('token', 'daily-dollar/token.json'),
                         {
                             "StartAt": "GetRangeData",
                             "States": {

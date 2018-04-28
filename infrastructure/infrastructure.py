@@ -2,6 +2,7 @@ import json
 
 from troposphere import Parameter, Output, GetAtt, Ref, Template, Join
 from troposphere.awslambda import Code, Environment
+from troposphere.events import Rule, Target
 from troposphere.iam import Policy
 from troposphere.iam import Role
 from troposphere.s3 import Bucket, BucketPolicy
@@ -406,7 +407,7 @@ if __name__ == '__main__':
         ManagedPolicyArns=["arn:aws:iam::aws:policy/service-role/AWSLambdaRole"],
         ))
 
-    template.add_resource(StateMachine(
+    stepfn_machine_dailydollar = template.add_resource(StateMachine(
         'DailyDollarStepFn',
         RoleArn=GetAtt(stepfn_role_dailydollar, 'Arn'),
         DefinitionString=json.dumps({
@@ -449,5 +450,15 @@ if __name__ == '__main__':
                 }
             })
         ))
+
+    template.add_resource(Rule(
+            'DailyDollarStepFnEventRule',
+            ScheduleExpression='cron(30 8 ? * * *)',
+            Targets=[Target(
+                Arn=Ref(stepfn_machine_dailydollar),
+                Id=stepfn_machine_dailydollar.name,
+                RoleArn=GetAtt(stepfn_role_dailydollar, 'Arn')
+                )]
+            ))
 
     print(template.to_json())

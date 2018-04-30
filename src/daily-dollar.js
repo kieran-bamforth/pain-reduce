@@ -34,8 +34,7 @@ module.exports = {
     });
   },
 
-  extractBudget: function extractBudget(event, context, callback) {
-    const data = JSON.parse(event.data);
+  extractBudget: function extractBudget(data) {
     const rows = data.values.filter(row => row[4] !== 'FALSE');
 
     if (rows.length !== 1) {
@@ -43,16 +42,13 @@ module.exports = {
     }
 
     const row = rows[0];
-    callback(null, {
-      "balance": row[2],
-      "money_per_day": row[7],
-      "money_per_week": row[8]
-    });
-  },
 
-  emailBudget: function emailBudget(event, context, callback) {
-    const subject = `Daily Dollar: ${event.money_per_day} available today.`;
-    const body = `You have ${event.balance} in the bank&mdash;that&rsquo;s equal to ${event.money_per_week} weekly, or ${event.money_per_day} daily.`;
+    return {
+      balance: row[2],
+      money_per_day: row[7],
+      money_per_week: row[8],
+    };
+  },
 
     helper.sendMail(emailAddress, subject, body).then((result) => {
       callback(null, {});

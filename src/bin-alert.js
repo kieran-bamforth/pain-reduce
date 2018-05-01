@@ -8,7 +8,7 @@ const ses = new aws.SES();
 
 module.exports = {
   binAlert: function binAlert(event, context, callback) {
-    const postCode=  process.env.POST_CODE;
+    const postCode = process.env.POST_CODE;
     const propertyRefNo = process.env.PROPERTY_REF_NO;
     const options = {
       method: 'GET',
@@ -16,11 +16,11 @@ module.exports = {
     };
 
     request(options).then((result) => {
-      const helper = require('./helper.js')
+      const helper = require('./helper.js');
       const emailAddress = process.env.EMAIL_ADDRESS;
 
-      timetable = helper.extractBinTimetable(result);
-      parsedTimetable = helper.parseBinTimetable(timetable);
+      const timetable = helper.extractBinTimetable(result);
+      // const parsedTimetable = helper.parseBinTimetable(timetable);
 
       return ses.sendEmail({
         Destination: {
@@ -30,7 +30,7 @@ module.exports = {
           Body: {
             Html: {
               Charset: 'UTF-8',
-              Data: timetable
+              Data: timetable,
             },
           },
           Subject: {
@@ -40,12 +40,10 @@ module.exports = {
         },
         Source: emailAddress,
       }).promise();
-    }).then((data) => {
-      console.log(`Email sent. Message ID: ${data.MessageId}`);
+    }).then(() => {
       callback();
-    })
-      .catch((error) => {
-        callback(error)
-      });
+    }).catch((error) => {
+      callback(error);
+    });
   },
-}
+};

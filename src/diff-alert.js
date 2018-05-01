@@ -21,14 +21,14 @@ module.exports = {
     ]).then((data) => {
       const lastModified = helper.getObjectModifiedBefore(data[0].LastModified, data[1].Contents);
 
-      console.log(`current key: ${key} last key: ${lastModified.Key}.`);
+      // console.log(`current key: ${key} last key: ${lastModified.Key}.`);
 
       return Promise.all([
         lastModified.Key,
         key,
       ].map(keyValue => s3.getObject({ Bucket: bucket, Key: keyValue }).promise()));
     }).then((data) => {
-      console.log(`Successfully downloaded two objects from S3. Attempting to send email to ${emailAddress}...`);
+      // console.log(`Successfully downloaded two objects from S3. Attempting to send email to ${emailAddress}...`);
 
       const from = data[0].Body.toString('utf-8');
       const to = data[1].Body.toString('utf-8');
@@ -43,7 +43,7 @@ module.exports = {
         message = handlebars.diffTemplate(diff);
       }
 
-      console.log(`${from}, ${to}`);
+      // console.log(`${from}, ${to}`);
 
       return ses.sendEmail({
         Destination: {
@@ -64,7 +64,7 @@ module.exports = {
         Source: emailAddress,
       }).promise();
     }).then((data) => {
-      console.log(`Email sent. Message ID: ${data.MessageId}`);
+      // console.log(`Email sent. Message ID: ${data.MessageId}`);
       callback();
     })
       .catch((error) => {

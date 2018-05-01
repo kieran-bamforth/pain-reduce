@@ -151,78 +151,6 @@ if __name__ == '__main__':
             ]
         ))
 
-    lambda_role_get_object = template.add_resource(create_lambda_role(
-        'GetObjectLambdaRole',
-        Policies=[
-            Policy(
-                PolicyName='SNSPublish',
-                PolicyDocument={
-                    'Version': '2012-10-17',
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Action': 'sns:Publish',
-                            'Resource': Ref(dead_letter_queue)
-                            }
-                        ]
-                    }
-                ),
-            Policy(
-                PolicyName='S3GetObject',
-                PolicyDocument={
-                    'Version': '2012-10-17',
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Action': 's3:GetObject',
-                            'Resource': Join('', [
-                                'arn:aws:s3:::', Ref(s3_bucket), '/*'
-                                ])
-                            }
-                        ]
-                    }
-                )
-            ]
-        ))
-
-    lambda_role_query_money_sheet = template.add_resource(create_lambda_role(
-        'QueryMoneySheetRole',
-        Policies=[
-            Policy(
-                PolicyName='SNSPublish',
-                PolicyDocument={
-                    'Version': '2012-10-17',
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Action': 'sns:Publish',
-                            'Resource': Ref(dead_letter_queue)
-                            }
-                        ]
-                    }
-                )
-            ]
-        ))
-
-    lambda_role_extract_budget_fn = template.add_resource(create_lambda_role(
-        'ExtractBudgetRole',
-        Policies=[
-            Policy(
-                PolicyName='SNSPublish',
-                PolicyDocument={
-                    'Version': '2012-10-17',
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Action': 'sns:Publish',
-                            'Resource': Ref(dead_letter_queue)
-                            }
-                        ]
-                    }
-                )
-            ]
-        ))
-
     lambda_role_can_email = template.add_resource(create_lambda_role(
         'BinAlertLambdaRole',
         Policies=[
@@ -324,15 +252,17 @@ if __name__ == '__main__':
         Role=GetAtt(lambda_role_can_email, 'Arn')
         ))
 
-    lambda_fn_email_budget = template.add_resource(create_lambda_fn_node(
-        'EmailBudgetLambdaFunction',
+    lambda_fn_daily_dollar = template.add_resource(create_lambda_fn_node(
+        'DailyDollarLambdaFunction',
         lambda_code,
         dead_letter_queue,
         Description='Send an email to explain how much money I have left',
         Environment=Environment(Variables={
+            'BUCKET': Ref(s3_bucket),
+            'MONEY_SPREADSHEET_ID': Ref(param_money_spreadsheet_id),
             'EMAIL_ADDRESS': Ref(param_email_address),
             }),
-        Handler='src/daily-dollar.emailBudget',
+        Handler='src/daily-dollar.dailyDollar',
         Role=GetAtt(lambda_role_can_email, 'Arn')
         ))
 
@@ -348,36 +278,6 @@ if __name__ == '__main__':
         Role=GetAtt(lambda_role_diff_alert, 'Arn')
         ))
 
-    get_object_fn = template.add_resource(create_lambda_fn_node(
-        'GetObjectLambdaFunction',
-        lambda_code,
-        dead_letter_queue,
-        Description='Gets an object from S3 and returns its body',
-        Handler='src/get-object.getObject',
-        Role=GetAtt(lambda_role_get_object, 'Arn')
-        ))
-
-    query_money_sheet_fn = template.add_resource(create_lambda_fn_node(
-        'QueryMoneySheetFunction',
-        lambda_code,
-        dead_letter_queue,
-        Description='Queries the Money Spreadsheet',
-        Environment=Environment(Variables={
-            'MONEY_SPREADSHEET_ID': Ref(param_money_spreadsheet_id),
-            }),
-        Handler='src/daily-dollar.queryMoneySheet',
-        Role=GetAtt(lambda_role_query_money_sheet, 'Arn')
-        ))
-
-    extract_budget_fn = template.add_resource(create_lambda_fn_node(
-        'ExtractBudgetFunction',
-        lambda_code,
-        dead_letter_queue,
-        Description='Extracts the budget from a Money sheet query.',
-        Handler='src/daily-dollar.extractBudget',
-        Role=GetAtt(lambda_role_extract_budget_fn, 'Arn')
-        ))
-
     lambda_fn_crons = [
             create_lambda_fn_cron('DumpTeller', lambda_fn_dump_teller, 'cron(0 9 ? * MON *)'),
             create_lambda_fn_cron('BinAlert', lambda_fn_bin_alert, 'cron(0 18 ? * TUE *)')
@@ -385,80 +285,5 @@ if __name__ == '__main__':
     for rule, permission in lambda_fn_crons:
         template.add_resource(rule)
         template.add_resource(permission)
-
-    stepfn_role_dailydollar = template.add_resource(Role(
-        'DailyDollarRole',
-        AssumeRolePolicyDocument={
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Principal": {
-                        "Service": [
-                            "states.amazonaws.com"
-                            ]
-                        },
-                    "Action": [
-                        "sts:AssumeRole"
-                        ]
-                    }
-                ]
-            },
-        ManagedPolicyArns=["arn:aws:iam::aws:policy/service-role/AWSLambdaRole"],
-        ))
-
-    stepfn_machine_dailydollar = template.add_resource(StateMachine(
-        'DailyDollarStepFn',
-        RoleArn=GetAtt(stepfn_role_dailydollar, 'Arn'),
-        DefinitionString=json.dumps({
-            "Comment": "An example of the Amazon States Language using a parallel state to execute two branches at the same time.",
-            "StartAt": "Parallel",
-            "States": {
-                "Parallel": {
-                    "Type": "Parallel",
-                    "Next": "QueryMoneySpreadsheet",
-                    "Branches": [
-                        create_stepfnjson_getobject('secret', 'daily-dollar/client-secret.json'),
-                        create_stepfnjson_getobject('token', 'daily-dollar/token.json'),
-                        {
-                            "StartAt": "GetRangeData",
-                            "States": {
-                                "GetRangeData": {
-                                    "Type": "Pass",
-                                    "Result": { "range": "Budget!A2:I" },
-                                    "End": True
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                "QueryMoneySpreadsheet": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:lambda:eu-west-1:855277617897:function:pain-reduce-QueryMoneySheetFunction-1RMUBUK61RQDO",
-                    "Next": "ExtractBudget"
-                    },
-                "ExtractBudget": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:lambda:eu-west-1:855277617897:function:pain-reduce-ExtractBudgetFunction-P17272M4YTZG",
-                    "Next": "EmailBudget"
-                    },
-                "EmailBudget": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:lambda:eu-west-1:855277617897:function:pain-reduce-EmailBudgetLambdaFunction-112733VM3N8XC",
-                    "End": True
-                    }
-                }
-            })
-        ))
-
-    template.add_resource(Rule(
-            'DailyDollarStepFnEventRule',
-            ScheduleExpression='cron(30 8 ? * * *)',
-            Targets=[Target(
-                Arn=Ref(stepfn_machine_dailydollar),
-                Id=stepfn_machine_dailydollar.name,
-                RoleArn=GetAtt(stepfn_role_dailydollar, 'Arn')
-                )]
-            ))
 
     print(template.to_json())

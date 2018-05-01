@@ -1,36 +1,61 @@
-const emailAddress = process.env.EMAIL_ADDRESS;
-const spreadsheetId = process.env.MONEY_SPREADSHEET_ID;
-
+const aws = require('aws-sdk');
+const bluebird = require('bluebird');
 const google = require('googleapis');
 const googleAuth = require('google-auth-library');
-const helper = require('./helper.js')
-const sheets = google.sheets('v4');
+const helper = require('./helper.js');
+
+aws.config.setPromisesDependency(bluebird);
 
 module.exports = {
 
-  queryMoneySheet: function queryMoneySheet(event, context, callback) {
-    const credentials = JSON.parse(event[0].body);
-    const token = JSON.parse(event[1].body);
-    const range = event[2].range;
+  dailyDollar: function dailyDollar(event, context, callback) {
+    const s3 = new aws.S3();
 
-    const auth = new googleAuth();
-    const oauth2Client = new auth.OAuth2(
-      credentials.installed.client_id,
-      credentials.installed.client_secret,
-      credentials.installed.redirect_uris[0]
-    );
-    oauth2Client.credentials = token;
+    const googleApiAuthObjects = ['client-secret.json', 'token.json'].map(objectName =>
+      s3.getObject({
+        Key: `daily-dollar/${objectName}`,
+        Bucket: process.env.BUCKET,
+      }).promise());
 
-    const requestObject = {
-      auth: oauth2Client,
-      spreadsheetId: spreadsheetId,
-      range: range
-    }
-    sheets.spreadsheets.values.get(requestObject, (error, response) => {
-      if (error) {
-        throw new Error('The API returned an error: ' + error);
-      }
-      callback(null, {data: JSON.stringify(response)});
+    Promise.all(googleApiAuthObjects).then((data) => {
+      const clientSecret = data[0];
+      const token = data[1];
+
+      const auth = new googleAuth();
+      const oauth2Client = new auth.OAuth2(
+        clientSecret.installed.client_id,
+        clientSecret.installed.client_secret,
+        clientSecret.installed.redirect_uris[0],
+      );
+      oauth2Client.credentials = token;
+
+      const sheets = google.sheets('v4');
+      return this.querySheet(
+        sheets,
+        oauth2Client,
+        process.env.MONEY_SPREADSHEET_ID,
+        'Budget!A2:I1000',
+      );
+    }).then(data => this.emailBudget(this.extractBudget(data))).then(() => {
+      callback(null, {});
+    })
+      .catch((error) => {
+        callback(error);
+      });
+  },
+
+  querySheet: function querySheet(sheets, oauth2Client, spreadSheetId, range) {
+    return new Promise((resolve, reject) => {
+      sheets.spreadsheets.values.get({
+        auth: oauth2Client,
+        spreadSheetId,
+        range,
+      }, (error, response) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(response);
+      });
     });
   },
 
@@ -42,7 +67,6 @@ module.exports = {
     }
 
     const row = rows[0];
-
     return {
       balance: row[2],
       money_per_day: row[7],
@@ -50,10 +74,11 @@ module.exports = {
     };
   },
 
-    helper.sendMail(emailAddress, subject, body).then((result) => {
-      callback(null, {});
-    }).catch((error) => {
-      callback(error);
-    });
-  }
-}
+  emailBudget: function emailBudget(budget) {
+    return helper.sendMail(
+      process.env.EMAIL_ADDRESS,
+      `Daily Dollar: ${budget.money_per_day} available today.`,
+      `You have ${budget.balance} in the bank&mdash;that&rsquo;s equal to ${budget.money_per_week} weekly, or ${budget.money_per_day} daily.`,
+    );
+  },
+};

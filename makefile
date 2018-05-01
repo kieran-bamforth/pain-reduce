@@ -6,6 +6,9 @@ PROJECT_NAME=pain-reduce
 TELLER_AUTH=change-me
 MONEY_SPREADSHEET_ID=1tdFtrQbeDSo_3ofbcS86k9U_xVcgoJLMZ7YEXHPbfD8
 
+test:
+	npm test
+
 zip-package:
 	rm -rf ./node_modules
 	yarn install --production
@@ -41,13 +44,6 @@ get-diff-function-arn:
 	$(eval DIFF_FUNCTION_ARN := $(shell aws cloudformation describe-stacks --stack-name $(CF_STACK_NAME) \
 		| jq '.Stacks[].Outputs[] | select (.OutputKey == "DiffAlertLambdaFunctionArn").OutputValue'))
 	echo $(DIFF_FUNCTION_ARN)
-
-invoke-diff-function: get-diff-function-arn
-	aws lambda invoke --function-name $(DIFF_FUNCTION_ARN) \
-		--invocation-type RequestResponse \
-		--log-type Tail \
-		--payload file://$(PWD)/tests/s3-put-notification.json \
-		diff.invoked.txt
 
 lint:
 	npm run lint

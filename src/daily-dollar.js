@@ -14,7 +14,7 @@ module.exports = {
     const googleApiAuthObjects = ['client-secret.json', 'token.json'].map(objectName =>
       s3.getObject({
         Key: `daily-dollar/${objectName}`,
-        Bucket: process.env.BUCKET,
+        Bucket: process.env.BUCKET
       }).promise());
 
     Promise.all(googleApiAuthObjects).then((data) => {
@@ -25,7 +25,7 @@ module.exports = {
       const oauth2Client = new auth.OAuth2(
         clientSecret.installed.client_id,
         clientSecret.installed.client_secret,
-        clientSecret.installed.redirect_uris[0],
+        clientSecret.installed.redirect_uris[0]
       );
       oauth2Client.credentials = token;
 
@@ -34,7 +34,7 @@ module.exports = {
         sheets,
         oauth2Client,
         process.env.MONEY_SPREADSHEET_ID,
-        'Budget!A2:I1000',
+        'Budget!A2:I1000'
       );
     }).then(data => this.emailBudget(this.extractBudget(data))).then(() => {
       callback(null, {});
@@ -78,7 +78,7 @@ module.exports = {
     return helper.sendMail(
       process.env.EMAIL_ADDRESS,
       `Daily Dollar: ${budget.money_per_day} available today.`,
-      `You have ${budget.balance} in the bank&mdash;that&rsquo;s equal to ${budget.money_per_week} weekly, or ${budget.money_per_day} daily.`,
+      `You have ${budget.balance} in the bank&mdash;that&rsquo;s equal to ${budget.money_per_week} weekly, or ${budget.money_per_day} daily.`
     );
   },
 };

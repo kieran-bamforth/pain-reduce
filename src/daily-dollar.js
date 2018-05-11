@@ -18,8 +18,8 @@ module.exports = {
       }).promise());
 
     Promise.all(googleApiAuthObjects).then((data) => {
-      const clientSecret = data[0];
-      const token = data[1];
+      const clientSecret = JSON.parse(data[0].Body.toString('utf-8'));
+      const token = JSON.parse(data[1].Body.toString('utf-8'));
 
       const auth = new googleAuth();
       const oauth2Client = new auth.OAuth2(

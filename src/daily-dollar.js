@@ -6,8 +6,45 @@ const helper = require('./helper.js');
 
 aws.config.setPromisesDependency(bluebird);
 
-module.exports = {
+function querySheet(sheets, oauth2Client, spreadSheetId, range) {
+  return new Promise((resolve, reject) => {
+    sheets.spreadsheets.values.get({
+      auth: oauth2Client,
+      spreadsheetId: spreadSheetId,
+      range: range,
+    }, (error, response) => {
+      if (error) {
+        reject(error);
+      }
+      resolve(response);
+    });
+  });
+}
 
+function extractBudget(data) {
+  const rows = data.values.filter(row => row[4] !== 'FALSE');
+
+  if (rows.length !== 1) {
+    throw new Error(`Could not find budget (rows.length was ${rows.length})`);
+  }
+
+  const row = rows[0];
+  return {
+    balance: row[2],
+    money_per_day: row[7],
+    money_per_week: row[8],
+  };
+}
+
+function emailBudget(budget) {
+  return helper.sendMail(
+    process.env.EMAIL_ADDRESS,
+    `Daily Dollar: ${budget.money_per_day} available today.`,
+    `You have ${budget.balance} in the bank&mdash;that&rsquo;s equal to ${budget.money_per_week} weekly, or ${budget.money_per_day} daily.`
+  );
+}
+
+module.exports = {
   dailyDollar: function dailyDollar(event, context, callback) {
     const s3 = new aws.S3();
 
@@ -30,55 +67,17 @@ module.exports = {
       oauth2Client.credentials = token;
 
       const sheets = google.sheets('v4');
-      return this.querySheet(
+      return querySheet(
         sheets,
         oauth2Client,
         process.env.MONEY_SPREADSHEET_ID,
         'Budget!A2:I1000'
       );
-    }).then(data => this.emailBudget(this.extractBudget(data))).then(() => {
+    }).then(data => emailBudget(extractBudget(data))).then(() => {
       callback(null, {});
     })
       .catch((error) => {
         callback(error);
       });
-  },
-
-  querySheet: function querySheet(sheets, oauth2Client, spreadSheetId, range) {
-    return new Promise((resolve, reject) => {
-      sheets.spreadsheets.values.get({
-        auth: oauth2Client,
-        spreadSheetId,
-        range,
-      }, (error, response) => {
-        if (error) {
-          reject(error);
-        }
-        resolve(response);
-      });
-    });
-  },
-
-  extractBudget: function extractBudget(data) {
-    const rows = data.values.filter(row => row[4] !== 'FALSE');
-
-    if (rows.length !== 1) {
-      throw new Error(`Could not find budget (rows.length was ${rows.length})`);
-    }
-
-    const row = rows[0];
-    return {
-      balance: row[2],
-      money_per_day: row[7],
-      money_per_week: row[8],
-    };
-  },
-
-  emailBudget: function emailBudget(budget) {
-    return helper.sendMail(
-      process.env.EMAIL_ADDRESS,
-      `Daily Dollar: ${budget.money_per_day} available today.`,
-      `You have ${budget.balance} in the bank&mdash;that&rsquo;s equal to ${budget.money_per_week} weekly, or ${budget.money_per_day} daily.`
-    );
   },
 };

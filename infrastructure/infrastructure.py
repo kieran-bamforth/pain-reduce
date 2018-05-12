@@ -280,7 +280,8 @@ if __name__ == '__main__':
 
     lambda_fn_crons = [
             create_lambda_fn_cron('DumpTeller', lambda_fn_dump_teller, 'cron(0 9 ? * MON *)'),
-            create_lambda_fn_cron('BinAlert', lambda_fn_bin_alert, 'cron(0 18 ? * TUE *)')
+            create_lambda_fn_cron('BinAlert', lambda_fn_bin_alert, 'cron(0 18 ? * TUE *)'),
+            create_lambda_fn_cron('DailyDollar', lambda_fn_daily_dollar, 'cron(15 9 ? * * *)')
             ]
     for rule, permission in lambda_fn_crons:
         template.add_resource(rule)

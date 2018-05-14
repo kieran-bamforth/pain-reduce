@@ -37,7 +37,7 @@ function extractBudget(data) {
 }
 
 function emailBudget(budget) {
-  const monzoLink = `https://monzo.me/kieranbamforth/${budget.monzo_per_day}`
+  const monzoLink = `https://monzo.me/kieranbamforth/${budget.money_per_day}`
   return helper.sendMail(
     process.env.EMAIL_ADDRESS,
     `Daily Dollar: ${budget.money_per_day} available today.`,

@@ -37,7 +37,9 @@ function extractBudget(data) {
 }
 
 function emailBudget(budget) {
-  const monzoLink = `https://monzo.me/kieranbamforth/${budget.money_per_day}`
+  const moneyPerDay = budget.money_per_day;
+  const moneyPerDayFloat = Number.parseFloat(moneyPerDay.substr(1, moneyPerDay.length));
+  const monzoLink = `https://monzo.me/kieranbamforth/${moneyPerDayFloat}`;
   return helper.sendMail(
     process.env.EMAIL_ADDRESS,
     `Daily Dollar: ${budget.money_per_day} available today.`,

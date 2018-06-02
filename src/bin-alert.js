@@ -1,51 +1,24 @@
-const aws = require('aws-sdk');
-const bluebird = require('bluebird');
+const helper = require('./helper.js');
 const request = require('request-promise');
-
-aws.config.setPromisesDependency(bluebird);
-
-const ses = new aws.SES();
 
 module.exports = {
   binAlert: function binAlert(event, context, callback) {
-    const postCode=  process.env.POST_CODE;
-    const propertyRefNo = process.env.PROPERTY_REF_NO;
-    const options = {
+    request({
       method: 'GET',
-      url: `https://www.oldham.gov.uk/bin-collection-days?postcode=${postCode}&uprn=${propertyRefNo}`,
-    };
-
-    request(options).then((result) => {
-      const helper = require('./helper.js')
+      url: 'https://www.oldham.gov.uk/bin-collection-days',
+      qs: {
+        postcode: process.env.POST_CODE,
+        uprn: process.env.PROPERTY_REF_NO,
+      },
+    }).then((result) => {
       const emailAddress = process.env.EMAIL_ADDRESS;
-
-      timetable = helper.extractBinTimetable(result);
-      parsedTimetable = helper.parseBinTimetable(timetable);
-
-      return ses.sendEmail({
-        Destination: {
-          ToAddresses: [emailAddress],
-        },
-        Message: {
-          Body: {
-            Html: {
-              Charset: 'UTF-8',
-              Data: timetable
-            },
-          },
-          Subject: {
-            Charset: 'UTF-8',
-            Data: 'Pain Reduce: Bin Alert',
-          },
-        },
-        Source: emailAddress,
-      }).promise();
-    }).then((data) => {
-      console.log(`Email sent. Message ID: ${data.MessageId}`);
+      const emailSubject = 'Pain Reduce: Bin Alert';
+      const emailBody = helper.extractBinTimetable(result);
+      return helper.sendMail(emailAddress, emailSubject, emailBody);
+    }).then(() => {
       callback();
-    })
-      .catch((error) => {
-        callback(error)
-      });
+    }).catch((error) => {
+      callback(error);
+    });
   },
-}
+};

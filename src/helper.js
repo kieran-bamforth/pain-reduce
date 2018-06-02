@@ -79,23 +79,23 @@ module.exports = {
     }
   },
   sendMail: function sendMail(emailAddress, subject, body) {
-      return ses.sendEmail({
-        Destination: {
-          ToAddresses: [emailAddress],
-        },
-        Message: {
-          Body: {
-            Html: {
-              Charset: 'UTF-8',
-              Data: body
-            },
-          },
-          Subject: {
+    return ses.sendEmail({
+      Destination: {
+        ToAddresses: [emailAddress],
+      },
+      Message: {
+        Body: {
+          Html: {
             Charset: 'UTF-8',
-            Data: subject,
+            Data: body
           },
         },
-        Source: emailAddress,
-      }).promise();
+        Subject: {
+          Charset: 'UTF-8',
+          Data: subject
+        },
+      },
+      Source: emailAddress,
+    }).promise();
   }
 };

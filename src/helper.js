@@ -98,18 +98,18 @@ module.exports = {
         Body: {
           Html: {
             Charset: 'UTF-8',
-            Data: body
+            Data: body,
           },
         },
         Subject: {
           Charset: 'UTF-8',
-          Data: subject
+          Data: subject,
         },
       },
       Source: emailAddress,
     }).promise();
   },
   getObject: function getPainReduceObject(bucket, key) {
-    return s3.getObject({ Bucket: bucket, Key: key }).promise()
+    return s3.getObject({ Bucket: bucket, Key: key }).promise();
   },
 };

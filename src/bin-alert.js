@@ -11,9 +11,9 @@ module.exports = {
         uprn: process.env.PROPERTY_REF_NO,
       },
     }).then((result) => {
-      const emailAddress = process.env.EMAIL_ADDRESS;
-      const emailSubject = 'Pain Reduce: Bin Alert';
       const emailBody = helper.extractBinTimetable(result);
+      const emailSubject = 'Pain Reduce: Bin Alert';
+      const emailAddress = process.env.EMAIL_ADDRESS;
       return helper.sendMail(emailAddress, emailSubject, emailBody);
     }).then(() => {
       callback();

@@ -11,11 +11,11 @@ test:
 
 zip-package:
 	rm -rf ./node_modules
-	yarn install --production
+	npm install --production
 	rm $(PROJECT_NAME).zip || true
 	zip -r $(PROJECT_NAME).zip ./src
 	zip -r $(PROJECT_NAME).zip ./node_modules
-	yarn install
+	npm install
 
 upload-package: zip-package
 	aws s3 cp $(PROJECT_NAME).zip s3://$(PACKAGE_BUCKET)/$(PACKAGE_KEY)

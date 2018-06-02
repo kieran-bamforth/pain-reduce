@@ -4,6 +4,7 @@ const cheerio = require('cheerio');
 
 aws.config.setPromisesDependency(bluebird);
 
+const s3 = new aws.S3();
 const ses = new aws.SES();
 
 module.exports = {
@@ -97,5 +98,8 @@ module.exports = {
       },
       Source: emailAddress,
     }).promise();
-  }
+  },
+  getObject: function getPainReduceObject(bucket, key) {
+    return s3.getObject({ Bucket: bucket, Key: key }).promise()
+  },
 };

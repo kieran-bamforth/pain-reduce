@@ -7,73 +7,50 @@ const helper = require('./helper.js');
 aws.config.setPromisesDependency(bluebird);
 
 const s3 = new aws.S3();
-const ses = new aws.SES();
 
 module.exports = {
   diffAlert: function diffAlert(event, context, callback) {
     const bucket = event.Records[0].s3.bucket.name;
-    const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
-    const emailAddress = process.env.EMAIL_ADDRESS;
+    const newObjectKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
 
     Promise.all([
-      s3.headObject({ Bucket: bucket, Key: key }).promise(),
-      s3.listObjectsV2({ Bucket: bucket, Prefix: helper.getKeyPath(key) }).promise(),
+      helper.getObject(bucket, newObjectKey),
+      s3.listObjectsV2({ Bucket: bucket, Prefix: helper.getKeyPath(newObjectKey) }).promise(),
     ]).then((data) => {
-      const lastModified = helper.getObjectModifiedBefore(data[0].LastModified, data[1].Contents);
+      // Find the last S3 object; created before new object.
+      const newObject = data[0];
+      const objectList = data[1];
 
-      console.log(`current key: ${key} last key: ${lastModified.Key}.`);
+      const lastModifiedObject = helper.getObjectModifiedBefore(
+        newObject.LastModified,
+        objectList.Contents,
+      );
+      console.log(`Retreiving nearest object: ${lastModifiedObject.Key}`);
 
       return Promise.all([
-        lastModified.Key,
-        key,
-      ].map(keyValue => s3.getObject({ Bucket: bucket, Key: keyValue }).promise()));
+        newObject,
+        helper.getObject(bucket, lastModifiedObject.Key),
+      ]);
     }).then((data) => {
-      console.log(`Successfully downloaded two objects from S3. Attempting to send email to ${emailAddress}...`);
+      // If different, email diff of last object..new object.
+      const fromBody = data[0].Body.toString('utf-8');
+      const toBody = data[1].Body.toString('utf-8');
+      const diff = deep.diff(JSON.parse(fromBody), JSON.parse(toBody));
 
-      const from = data[0].Body.toString('utf-8');
-      const to = data[1].Body.toString('utf-8');
-
-      let diff = deep.diff(JSON.parse(from), JSON.parse(to));
-
-      if (typeof diff !== 'undefined') {
-        console.log('There were no diffs to display');
+      if (typeof diff === 'undefined') {
+        console.log('There were no diffs to display.');
         callback();
+        return;
       }
 
-      if (typeof diff !== 'undefined') {
-        diff = helper.mergeDiffsWithToObject(
-          deep.diff(JSON.parse(from), JSON.parse(to)),
-          to
-        );
-        message = handlebars.diffTemplate(diff);
-      }
-
-      console.log(`${from}, ${to}`);
-
-      return ses.sendEmail({
-        Destination: {
-          ToAddresses: [emailAddress],
-        },
-        Message: {
-          Body: {
-            Html: {
-              Charset: 'UTF-8',
-              Data: message,
-            },
-          },
-          Subject: {
-            Charset: 'UTF-8',
-            Data: `Pain Reduce: Diff Alert (${key})`,
-          },
-        },
-        Source: emailAddress,
-      }).promise();
-    }).then((data) => {
-      console.log(`Email sent. Message ID: ${data.MessageId}`);
+      const emailBody = handlebars.diffTemplate(helper.mergeDiffsWithToObject(diff, toBody));
+      const emailSubject = 'Pain Reduce: Diff Alert';
+      const emailAddress = process.env.EMAIL_ADDRESS;
+      return helper.sendMail(emailAddress, emailSubject, emailBody);
+    }).then(() => {
       callback();
-    })
-      .catch((error) => {
-        throw error;
-      });
+    }).catch((error) => {
+      callback(error);
+    });
   },
 };

@@ -31,7 +31,7 @@ def create_lambda_role(role_name, **kwargs):
             )
 
 def create_lambda_fn_node(name, code, dead_letter_queue, **kwargs):
-    kwargs["Runtime"] = "nodejs6.10"
+    kwargs["Runtime"] = "nodejs8.10"
     return create_lambda_fn(name, code, dead_letter_queue, **kwargs)
 
 def create_lambda_fn(name, code, dead_letter_queue, **kwargs):

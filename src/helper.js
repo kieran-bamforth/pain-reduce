@@ -60,35 +60,34 @@ module.exports = {
     return $.html($('#bin_collections'));
   },
   parseBinTimetable: function parseBinTimetable(timetableHtml) {
-    const $ = cheerio.load(timetableHtml)
-    const timetable = {}
+    const $ = cheerio.load(timetableHtml);
+    const timetable = {};
 
     $('tbody > tr').each((i, elem) => {
-      const tds = $(elem).children()
-      const colour = tds.first().text().split(' ').shift()
-      const date = tds.last().text()
+      const tds = $(elem).children();
+      const colour = tds.first().text().split(' ').shift();
+      const date = tds.last().text();
 
-      if (Object.keys(timetable).indexOf(date) == -1 ) {
-        timetable[date] = []
+      if (Object.keys(timetable).indexOf(date) === -1) {
+        timetable[date] = [];
       }
 
-      timetable[date].push(colour)
+      timetable[date].push(colour);
     });
+    const nearestDate = Object.keys(timetable).reduce((currentDateStr, nextDateStr) => {
+      const [currentDay, currentMonth, currentYear] = currentDateStr.split('/');
+      const [nextDay, nextMonth, nextYear] = nextDateStr.split('/');
 
-    nearestDate = Object.keys(timetable).reduce((currentDateStr, nextDateStr) => {
-      const [currentDay, currentMonth, currentYear] = currentDateStr.split("/");
-      const [nextDay, nextMonth, nextYear] = nextDateStr.split("/");
-
-      const currentDate = new Date(currentYear, currentMonth-1, currentDay);
-      const nextDate = new Date(nextYear, nextMonth-1, nextDay);
+      const currentDate = new Date(currentYear, currentMonth - 1, currentDay);
+      const nextDate = new Date(nextYear, nextMonth - 1, nextDay);
 
       return (currentDate < nextDate) ? currentDateStr : nextDateStr;
-    })
+    });
 
     return {
-      "next": nearestDate,
-      "timetable": timetable
-    }
+      next: nearestDate,
+      timetable: timetable,
+    };
   },
   sendMail: function sendMail(emailAddress, subject, body) {
     return ses.sendEmail({

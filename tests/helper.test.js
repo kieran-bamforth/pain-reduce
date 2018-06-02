@@ -49,13 +49,17 @@ suite('helper.js', () => {
       objects = [
         { LastModified: '2017-08-08T10:52:59.000Z' },
         { LastModified: '2017-09-14T14:54:18.000Z' },
-        { LastModified: '2017-09-16T14:54:08.000Z' }
+        { LastModified: '2017-09-16T14:54:08.000Z' },
+        { LastModified: '2018-05-23T09:00:45.976Z' },
+        { LastModified: '2018-05-28T09:00:45.976Z' }
       ];
     });
     test('should get the previous object', () => {
       [
         { lastModified: '2017-09-14T14:54:18.000Z', expected: '2017-08-08T10:52:59.000Z' },
-        { lastModified: '2017-09-16T14:54:08.000Z', expected: '2017-09-14T14:54:18.000Z' }
+        { lastModified: '2017-09-16T14:54:08.000Z', expected: '2017-09-14T14:54:18.000Z' },
+        { lastModified: '2017-09-16T14:54:08.000Z', expected: '2017-09-14T14:54:18.000Z' },
+        { lastModified: '2018-05-28T09:00:45.976Z', expected: '2018-05-23T09:00:45.976Z' },
       ].forEach((entry) => {
         assert.deepEqual(
           helper.getObjectModifiedBefore(entry.lastModified, objects),

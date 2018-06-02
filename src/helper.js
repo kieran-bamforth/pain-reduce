@@ -26,13 +26,20 @@ module.exports = {
     }
     return key.split('/').slice(-1).join();
   },
-  getObjectModifiedBefore: function getObjectModifiedBefore(date, objects) {
-    const result = objects.reduce((acc, current) => {
-      return (current.LastModified < date && current > acc.LastModified) ? current : acc;
+  getObjectModifiedBefore: function getObjectModifiedBefore(dateString, objects) {
+    const result = objects.reduce((nearestObject, currentObject) => {
+      const nearest = nearestObject.LastModified;
+      const current = currentObject.LastModified;
+      if ((nearest < current) && (current < dateString)) {
+        return currentObject;
+      }
+      return nearestObject;
     }, { LastModified: '' });
+
     if (result.LastModified === '') {
-      throw new Error(`could not find any objects modified before ${date}`);
+      throw new Error(`could not find any objects modified before ${dateString}`);
     }
+
     return result;
   },
   mergeDiffsWithToObject: function mergeDiffsWithToObject(diffs, toObject) {

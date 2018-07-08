@@ -1,5 +1,4 @@
-from troposphere import GetAtt
-from troposphere import Ref
+from troposphere import GetAtt, Ref, ImportValue
 from troposphere.awslambda import Function, Code, DeadLetterConfig, Permission
 from troposphere.events import Rule, Target
 from troposphere.iam import Role
@@ -37,7 +36,7 @@ def create_lambda_fn_node(name, code, dead_letter_queue, **kwargs):
 def create_lambda_fn(name, code, dead_letter_queue, **kwargs):
     kwargs["Code"] = code
     kwargs["Timeout"] = 30
-    kwargs["DeadLetterConfig"] = DeadLetterConfig(TargetArn=Ref(dead_letter_queue))
+    kwargs["DeadLetterConfig"] = DeadLetterConfig(TargetArn=ImportValue('core-dead-letter-queue'))
     return Function(name, **kwargs)
 
 def create_lambda_fn_cron(name_prefix, lambda_fn, schedule_expression):

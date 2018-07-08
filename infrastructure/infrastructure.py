@@ -1,6 +1,6 @@
 import json
 
-from troposphere import Parameter, Output, GetAtt, Ref, Template, Join
+from troposphere import Parameter, Output, GetAtt, Ref, Template, Join, ImportValue
 from troposphere.awslambda import Code, Environment
 from troposphere.events import Rule, Target
 from troposphere.iam import Policy
@@ -13,10 +13,6 @@ from troposphere_extras import create_lambda_role, create_lambda_fn_node, create
 if __name__ == '__main__':
     template = Template()
 
-    param_latest_package_version = template.add_parameter(Parameter(
-        'LatestPackageVersion',
-        Type='String'
-        ))
     param_package_bucket = template.add_parameter(Parameter(
         'PackageBucket',
         Type='String'
@@ -48,14 +44,6 @@ if __name__ == '__main__':
 
     s3_bucket = template.add_resource(Bucket('Bucket'))
 
-    dead_letter_queue = template.add_resource(Topic(
-        'DeadLetterQueue',
-        Subscription=[Subscription(
-            Endpoint=Ref('EmailAddress'),
-            Protocol='email'
-            )]
-        ))
-
     lambda_role_dump_teller_response = template.add_resource(create_lambda_role(
         'DumpTellerResponseLambdaRole',
         Policies=[
@@ -82,7 +70,7 @@ if __name__ == '__main__':
                         {
                             'Effect': 'Allow',
                             'Action': 'sns:Publish',
-                            'Resource': Ref(dead_letter_queue)
+                            'Resource': ImportValue('core-dead-letter-queue')
                             }
                         ]
                     }
@@ -143,7 +131,7 @@ if __name__ == '__main__':
                         {
                             'Effect': 'Allow',
                             'Action': 'sns:Publish',
-                            'Resource': Ref(dead_letter_queue)
+                            'Resource': ImportValue('core-dead-letter-queue')
                             }
                         ]
                     }
@@ -172,7 +160,7 @@ if __name__ == '__main__':
                     'Statement': [{
                         'Effect': 'Allow',
                         'Action': 'sns:Publish',
-                        'Resource': Ref(dead_letter_queue)
+                        'Resource': ImportValue('core-dead-letter-queue')
                         }]
                     }
                 )
@@ -221,14 +209,13 @@ if __name__ == '__main__':
 
     lambda_code = Code(
             S3Bucket=Ref(param_package_bucket),
-            S3Key=Ref(param_package_key),
-            S3ObjectVersion=Ref(param_latest_package_version)
+            S3Key=Ref(param_package_key)
         )
 
     lambda_fn_dump_teller = template.add_resource(create_lambda_fn_node(
         'DumpTellerLambdaFunction',
         lambda_code,
-        dead_letter_queue,
+        ImportValue('core-dead-letter-queue'),
         Description='Makes a couple reqeusts to the Teller API and dumps the responses to S3.',
         Environment=Environment(Variables={
             'AUTH': Ref(param_teller_auth),
@@ -241,7 +228,7 @@ if __name__ == '__main__':
     lambda_fn_bin_alert = template.add_resource(create_lambda_fn_node(
         'BinAlertLambdaFunction',
         lambda_code,
-        dead_letter_queue,
+        ImportValue('core-dead-letter-queue'),
         Description='Sends what bins to take out',
         Environment=Environment(Variables={
             'EMAIL_ADDRESS': Ref(param_email_address),
@@ -255,7 +242,7 @@ if __name__ == '__main__':
     lambda_fn_daily_dollar = template.add_resource(create_lambda_fn_node(
         'DailyDollarLambdaFunction',
         lambda_code,
-        dead_letter_queue,
+        ImportValue('core-dead-letter-queue'),
         Description='Send an email to explain how much money I have left',
         Environment=Environment(Variables={
             'BUCKET': Ref(s3_bucket),
@@ -269,7 +256,7 @@ if __name__ == '__main__':
     lambda_fn_diff_alert = template.add_resource(create_lambda_fn_node(
         'DiffAlertLambdaFunction',
         lambda_code,
-        dead_letter_queue,
+        ImportValue('core-dead-letter-queue'),
         Description='Diffs a new S3 object against an older one, and alerts if there is a difference.',
         Environment=Environment(Variables={
             'EMAIL_ADDRESS': Ref(param_email_address)
